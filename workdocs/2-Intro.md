@@ -1,2 +1,2 @@
-## Typescript Template
+## Decaf-ts cli
 

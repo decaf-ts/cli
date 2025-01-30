@@ -1,18 +1,15 @@
 import path from "path";
 import gulp from "gulp";
 import rename from "gulp-rename";
-const { src, dest, parallel, series } = gulp;
+const { src, dest, series } = gulp;
 import ts from "gulp-typescript";
 const { createProject } = ts;
 import sourcemaps from "gulp-sourcemaps";
 import uglify from "gulp-uglify";
 import gulpIf from "gulp-if";
 import merge from "merge-stream";
-import named from "vinyl-named";
 import replace from "gulp-replace";
-import webpack from "webpack-stream";
 import run from "gulp-run-command";
-import process from "node:process";
 
 import pkg from "./package.json" assert { type: "json" };
 import fs from "fs";
@@ -31,61 +28,7 @@ function patchFiles() {
     };
   };
 
-  return series(doPatch("lib"), doPatch("dist"));
-}
-
-function getWebpackConfig(isESM, isDev) {
-  const webPackConfig = {
-    mode: isDev ? "development" : "production", // can be changed to production to produce minified bundle
-
-    module: {
-      rules: [
-        {
-          test: /\.ts$/,
-          use: [
-            {
-              loader: "ts-loader",
-              options: {
-                configFile: "tsconfig.json",
-              },
-            },
-          ],
-          include: [path.join(process.cwd(), "./src")],
-          exclude: /node_modules/,
-        },
-      ],
-    },
-
-    resolve: {
-      extensions: [".ts", ".js"],
-      fallback: {
-        path: false,
-        fs: false,
-        stream: false,
-        os: false,
-        assert: false,
-        util: false,
-      },
-    },
-
-    output: {
-      filename: `${name}.bundle.${!isDev ? "min." : ""}${isESM ? "esm." : ""}js`,
-      path: path.join(process.cwd(), "./dist/"),
-    },
-  };
-
-  if (isESM) webPackConfig.experiments = { outputModule: true };
-  else
-    webPackConfig.output = Object.assign({}, webPackConfig.output, {
-      globalObject: "this",
-      library: name,
-      libraryTarget: "umd",
-      umdNamedDefine: true,
-    });
-
-  if (isDev) webPackConfig.devtool = "eval-source-map";
-
-  return webPackConfig;
+  return series(doPatch("lib"));
 }
 
 function exportDefault(isDev, mode) {
@@ -155,26 +98,6 @@ function exportDefault(isDev, mode) {
   };
 }
 
-function exportBundles(isEsm, isDev) {
-  const entryFile = "src/index.ts";
-  return src(entryFile)
-    .pipe(named())
-    .pipe(webpack(getWebpackConfig(isEsm, isDev)))
-    .pipe(dest(`./dist${isEsm ? "/esm" : ""}`));
-}
-
-function exportESMDist(isDev = false) {
-  return function exportJSDist() {
-    return exportBundles(true, isDev);
-  };
-}
-
-function exportJSDist(isDev = false) {
-  return function exportJSDist() {
-    return exportBundles(false, isDev);
-  };
-}
-
 function makeDocs() {
   const copyFiles = (source, destination) => {
     return function copyFiles() {
@@ -213,20 +136,12 @@ function makeDocs() {
 }
 
 export const dev = series(
-  parallel(
-    series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
-    exportESMDist(true),
-    exportJSDist(true)
-  ),
+  series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
   patchFiles()
 );
 
 export const prod = series(
-  parallel(
-    series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
-    exportESMDist(false),
-    exportJSDist(false)
-  ),
+  series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
   patchFiles()
 );
 

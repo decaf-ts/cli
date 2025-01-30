@@ -1,20 +1,45 @@
-import {ChildClass, Class, complexFunction, something,} from "../../src";
+import { CliWrapper } from "../../src";
+import path from "path";
 
-describe("Type Script Workspace test", function () {
-  it("runs functions", function () {
-    expect(complexFunction(),).toBe("Hello Worlddefault",);
-  },);
+describe("cli", () => {
+  let cli: CliWrapper;
+  const p = "lib";
 
-  it("Instantiates Classes", async function () {
-    const a = new Class(1, "string",);
-    expect(a,).toBeDefined();
-    expect(a.method,).rejects.toBeInstanceOf(Error,);
-    expect(Class.method,).toThrow();
-    const b = new ChildClass("string", "string",);
-    expect(b,).toBeDefined();
-    expect(() => b.method2("string",),).toThrow();
-    expect(something.call(a,),).toEqual(a,);
-    const res = await b.method();
-    expect(res,).toEqual("ok",);
-  },);
-},);
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    cli = new CliWrapper(p);
+  });
+
+  it("crawls properly from the given basePath", () => {
+    const files = cli["crawl"](p);
+    expect(files).toEqual(
+      expect.arrayContaining(["lib/cli.cjs", "lib/test/cli.cjs"])
+    );
+  });
+
+  it("loads from a given file", async () => {
+    await cli["load"](
+      path.join(process.cwd(), "lib/test/cli.cjs"),
+      process.cwd()
+    );
+    expect(cli["modules"]["test"]).toBeDefined();
+  });
+
+  it("loads all modules from a base path within 2 levels", async () => {
+    cli = new CliWrapper(p + "/test");
+    await cli["boot"]();
+    expect(cli["modules"]["test"]).toBeDefined();
+  });
+
+  it("Runs a command from a registered module", async () => {
+    const original = console.log;
+    const logMock = jest.spyOn(console, "log");
+    logMock.mockImplementation((msg: string) => {
+      original(msg);
+    });
+    await cli.run([...process.argv.slice(0, 2), "test"]);
+    expect(logMock).toHaveBeenCalledTimes(1);
+  });
+});

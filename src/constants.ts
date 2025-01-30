@@ -8,4 +8,4 @@ import { CliModule } from "./types";
  * @constant
  * @memberOf module:CLI.cli
  */
-export const CLI_FILE_NAME = "cli";
+export const CLI_FILE_NAME = "cli-module";

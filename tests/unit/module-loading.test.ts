@@ -1,8 +1,9 @@
 import path from "path";
 import { CLIUtils } from "../../src/utils";
+import { CLI_FILE_NAME } from "../../src/constants";
 
 describe("Module Loading", function () {
-  const file = "lib/test/cli.cjs";
+  const file = `lib/test/${CLI_FILE_NAME}.cjs`;
   it("loads from files", async function () {
     const module = await CLIUtils.loadFromFile(path.join(process.cwd(), file));
     expect(module).toBeDefined();

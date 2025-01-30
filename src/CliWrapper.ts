@@ -13,21 +13,24 @@ import { CLIUtils } from "./utils";
  * @class CliWrapper
  */
 export class CliWrapper {
-  private static _command?: Command;
+  private _command?: Command;
   private modules: Record<string, Command> = {};
 
-  constructor(private basePath: string = "lib") {}
+  constructor(
+    private basePath: string = "lib",
+    private crawlLevels = 4
+  ) {}
 
   /**
    * @description Retrieves and initializes the singleton {@link Command} object
    * @private
    */
   private get command() {
-    if (!CliWrapper._command) {
-      CliWrapper._command = new Command();
-      CLIUtils.initialize(CliWrapper._command, this.basePath);
+    if (!this._command) {
+      this._command = new Command();
+      CLIUtils.initialize(this._command, this.basePath);
     }
-    return CliWrapper._command;
+    return this._command;
   }
 
   /**
@@ -36,20 +39,23 @@ export class CliWrapper {
    * @param {string} rootPath
    * @private
    */
-  private async load(filePath: string, rootPath: string): Promise<void> {
+  private async load(filePath: string, rootPath: string): Promise<string> {
     let name;
     try {
       const module = await CLIUtils.loadFromFile(filePath);
       name = module.name;
       const cmd = new Command();
       CLIUtils.initialize(cmd, path.dirname(rootPath));
-      module(cmd);
-      this.modules[name] = cmd;
+      let m = module();
+      if (m instanceof Promise) m = await m;
+      this.modules[name] = m;
     } catch (e: unknown) {
       throw new Error(
-        `failed to load module ${name} under ${filePath}: ${e instanceof Error ? e.message : e}`
+        // eslint-disable-next-line max-len
+        `failed to load module ${name || "unnamed"} under ${filePath}: ${e instanceof Error ? e.message : e}`
       );
     }
+    return name;
   }
 
   /**
@@ -59,18 +65,31 @@ export class CliWrapper {
    */
   private async boot() {
     const basePath = path.join(process.cwd(), this.basePath);
-    const modules = this.crawl(basePath);
+    const modules = this.crawl(basePath, this.crawlLevels);
     for (const module of modules) {
       if (module.includes("@decaf-ts/cli")) {
         continue;
       }
-
+      let name: string;
       try {
-        await this.load(module, basePath);
+        name = await this.load(module, process.cwd());
       } catch (e: unknown) {
         console.error(e);
+        continue;
       }
+
+      if (!this.command.commands.find((c) => (c as any)["_name"] === name))
+        try {
+          this.command.command(name).addCommand(this.modules[name]);
+        } catch (e: unknown) {
+          console.error(e);
+        }
     }
+    console.log(
+      `loaded modules:\n${Object.keys(this.modules)
+        .map((k) => `- ${k}`)
+        .join("\n")}`
+    );
   }
 
   /**
@@ -81,19 +100,17 @@ export class CliWrapper {
    */
   private crawl(basePath: string, levels: number = 2) {
     if (levels <= 0) return [];
-    return fs
-      .readdirSync(basePath)
-      .reduce((accum: string[], file) => {
-        file = path.join(basePath, file);
-        if (basePath.endsWith("cli")) return accum;
-        if (fs.statSync(file).isDirectory()) {
-          accum.push(...this.crawl(file, levels - 1));
-        } else {
-          accum.push(file);
-        }
-        return accum;
-      }, [])
-      .filter((f) => f.endsWith(`${CLI_FILE_NAME}.cjs`));
+    return fs.readdirSync(basePath).reduce((accum: string[], file) => {
+      file = path.join(basePath, file);
+      if (fs.statSync(file).isDirectory()) {
+        accum.push(...this.crawl(file, levels - 1));
+      } else if (file.endsWith(`${CLI_FILE_NAME}.cjs`)) {
+        accum.push(file);
+      } else {
+        // ignored file
+      }
+      return accum;
+    }, []);
   }
 
   /**
@@ -103,18 +120,6 @@ export class CliWrapper {
    */
   async run(args: string[] = process.argv) {
     await this.boot();
-    this.command
-      .command("<module> <operation> ...args")
-      .action(async (ars: { module: string; operation: string }) => {
-        const { module } = ars;
-        if (!this.modules[module])
-          throw new Error(`Could not find module ${module}.`);
-        const childArgs = [
-          ...args.slice(0, 2),
-          ...args.slice(3, args.length - 1),
-        ];
-        await this.modules[module].parseAsync(childArgs);
-      });
-    await this.command.parseAsync(args);
+    return this.command.parseAsync(args);
   }
 }

@@ -8,4 +8,4 @@ import { CLI_FILE_NAME } from "./constants";
  *
  * @memberOf module.CLI.cli
  */
-export type CliModule = (commander: Command) => void | Promise<void>;
+export type CliModule = () => Command | Promise<Command>;

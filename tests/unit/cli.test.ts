@@ -1,45 +1,85 @@
+import SpyInstance = jest.SpyInstance;
+
+const realProcess = process;
+const exitMock = jest.fn();
+// @ts-expect-error for testing purposes
+global.process = { ...realProcess, exit: exitMock };
+
+const logOriginal = console.log;
+const logMock = jest.spyOn(console, "log");
+logMock.mockImplementation((msg: string) => {
+  logOriginal(msg);
+});
+
+import { version } from "../../package.json";
+
 import { CliWrapper } from "../../src";
-import path from "path";
 
-describe("cli", () => {
+describe("decaf-ts cli", () => {
   let cli: CliWrapper;
-  const p = "lib";
+  let writeMock: SpyInstance<void, [str: string], any>;
 
-  beforeEach(() => {
-    jest.restoreAllMocks();
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-    cli = new CliWrapper(p);
+  afterAll(() => {
+    // global.process = realProcess;
   });
 
-  it("crawls properly from the given basePath", () => {
-    const files = cli["crawl"](p);
-    expect(files).toEqual(
-      expect.arrayContaining(["lib/cli.cjs", "lib/test/cli.cjs"])
+  beforeAll(() => {
+    cli = new CliWrapper("./");
+    writeMock = jest.spyOn(
+      (cli["command"] as any)["_outputConfiguration"] as {
+        writeOut: (str: string) => void;
+      },
+      "writeOut"
+    );
+    writeMock.mockImplementation((str: string) => {
+      process.stdout.write(str);
+    });
+  });
+
+  afterEach(() => {
+    writeMock.mockReset();
+    writeMock.mockClear();
+    logMock.mockReset();
+    logMock.mockClear();
+  });
+
+  it("Retrieves the cli version", async () => {
+    // cli["command"]
+    await cli.run(["node", "cli", "-V"]);
+    expect(logMock).toHaveBeenCalledTimes(1);
+    expect(writeMock).toHaveBeenNthCalledWith(1, version + "\n");
+  });
+
+  it("Retrieves the global help", async () => {
+    await cli.run(["node", "cli", "-h"]);
+    expect(writeMock).toHaveBeenCalledTimes(1);
+    expect(writeMock).toHaveBeenCalledWith(
+      "Usage: cli [options] [command]\n" +
+        "\n" +
+        "Runs cli related commands\n" +
+        "\n" +
+        "Options:\n" +
+        "  -V, --version   output the version number\n" +
+        "  -h, --help      display help for command\n" +
+        "\n" +
+        "Commands:\n" +
+        "  test\n" +
+        "  help [command]  display help for command\n"
     );
   });
 
-  it("loads from a given file", async () => {
-    await cli["load"](
-      path.join(process.cwd(), "lib/test/cli.cjs"),
-      process.cwd()
-    );
-    expect(cli["modules"]["test"]).toBeDefined();
-  });
-
-  it("loads all modules from a base path within 2 levels", async () => {
-    cli = new CliWrapper(p + "/test");
-    await cli["boot"]();
-    expect(cli["modules"]["test"]).toBeDefined();
-  });
+  // it("retrieves the help for a specific command", async () => {
+  //   await cli.run(["node", "cli", "help", "test"]);
+  //   expect(writeMock).toHaveBeenCalledTimes(1);
+  //   expect(writeMock).toHaveBeenCalledWith("");
+  // });
 
   it("Runs a command from a registered module", async () => {
-    const original = console.log;
-    const logMock = jest.spyOn(console, "log");
-    logMock.mockImplementation((msg: string) => {
-      original(msg);
-    });
-    await cli.run([...process.argv.slice(0, 2), "test"]);
-    expect(logMock).toHaveBeenCalledTimes(1);
+    await cli.run(["node", "cli", "test", "command", "entry"]);
+    expect(logMock).toHaveBeenCalledTimes(2);
+    expect(logMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("executed test command with entry")
+    );
   });
 });

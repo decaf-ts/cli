@@ -72,6 +72,6 @@ export class CLIUtils {
    * @param {string} [basePath] defaults to current working dir
    */
   static packageName(basePath: string = process.cwd()): string {
-    return CLIUtils.getPackage(basePath)["name"] as string;
+    return (CLIUtils.getPackage(basePath)["name"] as string).split("/")[1];
   }
 }

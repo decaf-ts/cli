@@ -48,7 +48,7 @@ export class CLIUtils {
    * @param {Command} command
    * @param {string} [basePath] defaults to the current working directory
    */
-  static initialize(command: Command, basePath: string = process.cwd()) {
+  static initialize(command: Command, basePath: string) {
     const name = CLIUtils.packageName(basePath);
     command
       .name(name)
@@ -76,7 +76,7 @@ export class CLIUtils {
    * @description returns the package version
    * @param {string} [basePath] defaults to current working dir
    */
-  static packageVersion(basePath: string = process.cwd()): string {
+  static packageVersion(basePath: string): string {
     return CLIUtils.getPackage(basePath)["version"] as string;
   }
 
@@ -84,7 +84,7 @@ export class CLIUtils {
    * @description returns the package name
    * @param {string} [basePath] defaults to current working dir
    */
-  static packageName(basePath: string = process.cwd()): string {
+  static packageName(basePath: string): string {
     return (CLIUtils.getPackage(basePath)["name"] as string).split("/")[1];
   }
 }

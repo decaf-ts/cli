@@ -18,7 +18,7 @@ import { Command } from "commander";
  *
  * @function demo
  *
- * @category CLI
+ * @category Command Line Interface
  *
  * @example
  * `npx decaf demo command "something something" `

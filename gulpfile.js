@@ -21,8 +21,14 @@ const VERSION_STRING = "##VERSION##";
 function patchFiles() {
   const doPatch = (basePath) => {
     return function doPatch() {
-      const jsFiles = [`${basePath}/**/*.js`];
+      const jsFiles = [`${basePath}/**/*.?(c|m)js`];
       return src(jsFiles)
+        .pipe(
+          replace(
+            /"use\sstrict";\n\/\*\*\n\s\*\sBIN_CALL_PLACEHOLDER.*\n\s\*\//gm,
+            "#!/usr/bin/env node"
+          )
+        )
         .pipe(replace(VERSION_STRING, `${version}`))
         .pipe(dest(`${basePath}/`));
     };

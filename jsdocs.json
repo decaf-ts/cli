@@ -16,7 +16,7 @@
       "./src"
     ],
     "exclude": [
-      "cli.(ts|js)"
+      "./src/cli.(ts|js)"
     ],
     "includePattern": "\\.(jsx|js|ts|tsx)$"
   },

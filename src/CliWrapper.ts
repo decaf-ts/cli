@@ -55,7 +55,7 @@ export class CliWrapper {
       this.modules[name] = m;
     } catch (e: unknown) {
       throw new Error(
-        // eslint-disable-next-line max-len
+         
         `failed to load module ${name || "unnamed"} under ${filePath}: ${e instanceof Error ? e.message : e}`
       );
     }

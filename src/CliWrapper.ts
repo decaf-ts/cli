@@ -8,7 +8,8 @@ import { CLIUtils } from "./utils";
  * @summary Util class to handle CLI functionality from all Decaf modules
  * @description CLI handler class
  *
- * @param {string} [basepath] the base path to look for modules in. defaults to `lib`
+ * @param {string} [basepath] the base path to look for modules in. defaults to `./`
+ * @param {string} [crawlLevels] folders to crawl to find modules from the basePath. defaults to 4
  *
  * @class CliWrapper
  */
@@ -17,12 +18,12 @@ export class CliWrapper {
   private modules: Record<string, Command> = {};
 
   constructor(
-    private basePath: string = "lib",
+    private basePath: string = "./",
     private crawlLevels = 4
   ) {}
 
   /**
-   * @description Retrieves and initializes the singleton {@link Command} object
+   * @description Retrieves and initializes the {@link Command} object
    * @private
    */
   private get command() {
@@ -35,8 +36,11 @@ export class CliWrapper {
 
   /**
    * @description loads and registers module from a file
-   * @param {string} filePath
-   * @param {string} rootPath
+   *
+   * @param {string} filePath path to look for modules
+   * @param {string} rootPath repo root to find the package.json
+   * @return {string} the module name
+   *
    * @private
    */
   private async load(filePath: string, rootPath: string): Promise<string> {
@@ -78,7 +82,11 @@ export class CliWrapper {
         continue;
       }
 
-      if (!this.command.commands.find((c) => (c as any)["_name"] === name))
+      if (
+        !this.command.commands.find(
+          (c) => (c as unknown as Record<string, string>)["_name"] === name
+        )
+      )
         try {
           this.command.command(name).addCommand(this.modules[name]);
         } catch (e: unknown) {
@@ -93,7 +101,7 @@ export class CliWrapper {
   }
 
   /**
-   * @description
+   * @description crawls the basePath up for 'levels' folders to find a module,eg a {@link CLI_FILE_NAME} named file
    * @param {string} basePath the relative base batch to start searching in
    * @param {number} [levels] the max number of levels to crawl. defaults to 2
    * @private

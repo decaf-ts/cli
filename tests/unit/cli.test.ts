@@ -63,7 +63,7 @@ describe("decaf-ts cli", () => {
         "  -h, --help      display help for command\n" +
         "\n" +
         "Commands:\n" +
-        "  test\n" +
+        "  demo\n" +
         "  help [command]  display help for command\n"
     );
   });
@@ -75,11 +75,11 @@ describe("decaf-ts cli", () => {
   // });
 
   it("Runs a command from a registered module", async () => {
-    await cli.run(["node", "cli", "test", "command", "entry"]);
+    await cli.run(["node", "cli", "demo", "command", "entry"]);
     expect(logMock).toHaveBeenCalledTimes(2);
     expect(logMock).toHaveBeenNthCalledWith(
       2,
-      expect.stringContaining("executed test command with entry")
+      expect.stringContaining("executed demo command with type variable: entry")
     );
   });
 });

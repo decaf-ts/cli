@@ -10,6 +10,11 @@ import { CliModule } from "./types";
  * @static
  */
 export class CLIUtils {
+  /**
+   * @description Dynamically imports a cjs file into a decaf module
+   * @param {string} path
+   * @static
+   */
   static async loadFromFile(path: string): Promise<CliModule> {
     try {
       return CLIUtils.normalizeImport(import(path));
@@ -20,6 +25,14 @@ export class CLIUtils {
     }
   }
 
+  /**
+   * @description allows safe dynamic imports
+   * @summary property imports JS files regardless of esm status
+   *
+   * @typeParam T
+   * @param {Promise} importPromise
+   * @private
+   */
   private static async normalizeImport<T>(
     importPromise: Promise<T>
   ): Promise<T> {

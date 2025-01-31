@@ -1,14 +1,24 @@
 export * from "./CliWrapper";
 
 /**
- * @summary Decaf command line interface setup
- * @description sets up the mechanisms to allow other modules to register additional functionality
+ * @description Decaf Command Line Interface module
+ * @summary Provides the base access to the decaf CLI and:
+ *
+ * For each other '@decaf-ts' dependency:
+ *  - find the `cli-module` file if it exists;
+ *  - load it anto the main decaf-cli and expose its functionality
+ *
  * @module CLI
  */
 
 /**
- * @summary Decaf command line interface setup
- * @description sets up the mechanisms to allow other modules to register additional functionality
+ * @description Decaf Command Line Interface module
+ * @summary Provides the base access to the decaf CLI and:
+ *
+ * For each other '@decaf-ts' dependency:
+ *  - find the `cli-module` file if it exists;
+ *  - load it anto the main decaf-cli and expose its functionality
+ *
  * @namespace cli
  * @memberOf module:CLI
  */

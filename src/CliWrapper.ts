@@ -111,7 +111,7 @@ export class CliWrapper {
       file = path.join(basePath, file);
       if (fs.statSync(file).isDirectory()) {
         accum.push(...this.crawl(file, levels - 1));
-      } else if (file.match(new RegExp(`${CLI_FILE_NAME}.[cm]?js`, "gm"))) {
+      } else if (file.match(new RegExp(`${CLI_FILE_NAME}.[cm]?js$`, "gm"))) {
         // } else if (file.endsWith(`${CLI_FILE_NAME}.cjs`)) {
         accum.push(file);
       } else {

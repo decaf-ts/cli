@@ -9,7 +9,7 @@
   },
   "types": "lib/index.d.ts",
   "bin": {
-    "decaf": "lib/cli.cjs"
+    "decaf": "src/clis.ts"
   },
   "scripts": {
     "do-install": "TOKEN=$(cat .token) npm install",

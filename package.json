@@ -8,7 +8,9 @@
     "import": "./lib/esm/index.js"
   },
   "types": "lib/index.d.ts",
-  "bin": "lib/cli.cjs",
+  "bin": {
+    "decaf": "lib/cli.cjs"
+  },
   "scripts": {
     "do-install": "TOKEN=$(cat .token) npm install",
     "flash-forward": "npx npm-check-updates -u && npm run do-install",

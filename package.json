@@ -9,7 +9,7 @@
   },
   "types": "lib/index.d.ts",
   "bin": {
-    "decaf": "src/clis.ts"
+    "decaf": "src/cli.ts"
   },
   "scripts": {
     "do-install": "TOKEN=$(cat .token) npm install",
@@ -97,6 +97,7 @@
     "npm-check-updates": "^17.1.14",
     "prettier": "3.4.2",
     "rimraf": "^6.0.1",
+    "through2": "^4.0.2",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",

@@ -113,8 +113,6 @@ export class CliWrapper {
         accum.push(...this.crawl(file, levels - 1));
       } else if (file.match(new RegExp(`${CLI_FILE_NAME}.[cm]?js$`, "gm"))) {
         accum.push(file);
-      } else {
-        // ignored file
       }
       return accum;
     }, []);

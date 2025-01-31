@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/decaf-ts/ts-workspace.git"
+    "url": "git+https://github.com/decaf-ts/cli.git"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -64,9 +64,9 @@
   "author": "Tiago Venceslau",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/decaf-ts/ts-workspace/issues"
+    "url": "https://github.com/decaf-ts/cli/issues"
   },
-  "homepage": "https://github.com/decaf-ts/ts-workspace#readme",
+  "homepage": "https://github.com/decaf-ts/cli#readme",
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@stylistic/eslint-plugin": "^3.0.1",

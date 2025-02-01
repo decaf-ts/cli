@@ -107,5 +107,10 @@
   },
   "dependencies": {
     "commander": "^13.1.0"
+  },
+  "overrides": {
+    "gulp-run-command": {
+      "cross-spawn": "^7.0.6"
+    }
   }
 }

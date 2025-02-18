@@ -33,9 +33,7 @@ export class CLIUtils {
    * @param {Promise} importPromise
    * @private
    */
-  private static async normalizeImport<T>(
-    importPromise: Promise<T>
-  ): Promise<T> {
+  static async normalizeImport<T>(importPromise: Promise<T>): Promise<T> {
     // CommonJS's `module.exports` is wrapped as `default` in ESModule.
     return importPromise.then(
       (m: unknown) => ((m as { default: T }).default || m) as T

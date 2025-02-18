@@ -1,23 +1,29 @@
 export * from "./CliWrapper";
 
 /**
- * @description Decaf Command Line Interface module
- * @summary Provides the base access to the decaf CLI and:
+ * @description Decaf-ts' CLI module
+ * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}
+ * within the @decaf-ts namespace and load then as subcommands
  *
- * For each other '@decaf-ts' dependency:
- *  - find the `cli-module` file if it exists;
- *  - load it anto the main decaf-cli and expose its functionality
+ * @example
+ * run module command     - $ npx decaf <module name> <module command> ...<module command options>
+ * get module help        - $ npx decaf help <module name>;
+ * list imported modules  - $ npx decaf list;
+ * get cli help           - $ npx decaf help;
  *
  * @module CLI
  */
 
 /**
- * @description Decaf Command Line Interface module
- * @summary Provides the base access to the decaf CLI and:
+ * @description Decaf-ts' CLI namespace
+ * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}
+ * within the @decaf-ts namespace and load then as subcommands
  *
- * For each other '@decaf-ts' dependency:
- *  - find the `cli-module` file if it exists;
- *  - load it anto the main decaf-cli and expose its functionality
+ * @example
+ * run module command     - $ npx decaf <module name> <module command> ...<module command options>
+ * get module help        - $ npx decaf help <module name>;
+ * list imported modules  - $ npx decaf list;
+ * get cli help           - $ npx decaf help;
  *
  * @namespace cli
  * @memberOf module:CLI

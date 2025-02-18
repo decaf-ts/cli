@@ -1,4 +1,3 @@
-import path from "path";
 import gulp from "gulp";
 import rename from "gulp-rename";
 const { src, dest, series } = gulp;
@@ -10,10 +9,12 @@ import gulpIf from "gulp-if";
 import merge from "merge-stream";
 import replace from "gulp-replace";
 import run from "gulp-run-command";
+import through from "through2";
 
 import pkg from "./package.json" assert { type: "json" };
-import fs from "fs";
 let { name, version } = pkg;
+import fs from "fs";
+import path from "path";
 
 if (name.includes("/")) name = name.split("/")[1]; // for scoped packages
 const VERSION_STRING = "##VERSION##";
@@ -21,14 +22,36 @@ const VERSION_STRING = "##VERSION##";
 function patchFiles() {
   const doPatch = (basePath) => {
     return function doPatch() {
-      const jsFiles = [`${basePath}/**/*.js`];
+      const jsFiles = [`${basePath}/**/*.?(c|m)js`];
       return src(jsFiles)
+        .pipe(
+          replace(
+            /"use\sstrict";\n\/\*\*\n\s\*\sBIN_CALL_PLACEHOLDER.*\n\s\*\//gm,
+            "#!/usr/bin/env node"
+          )
+        )
         .pipe(replace(VERSION_STRING, `${version}`))
         .pipe(dest(`${basePath}/`));
     };
   };
 
   return series(doPatch("lib"));
+}
+
+function chmodCLIFiles() {
+  const doChmod = (basePath) => {
+    return function doChmod() {
+      const jsFiles = [`${basePath}/**/cli.?(c|m)js`];
+      return src(jsFiles).pipe(
+        through.obj(function (file, enc, cb) {
+          fs.chmodSync(file.path, 0o775);
+          cb(null);
+        })
+      );
+    };
+  };
+
+  return series(doChmod("lib"));
 }
 
 function exportDefault(isDev, mode) {
@@ -137,12 +160,14 @@ function makeDocs() {
 
 export const dev = series(
   series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
-  patchFiles()
+  patchFiles(),
+  chmodCLIFiles()
 );
 
 export const prod = series(
   series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
-  patchFiles()
+  patchFiles(),
+  chmodCLIFiles()
 );
 
 export const docs = makeDocs();

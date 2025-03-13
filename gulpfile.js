@@ -11,7 +11,7 @@ import replace from "gulp-replace";
 import run from "gulp-run-command";
 import through from "through2";
 
-import pkg from "./package.json" assert { type: "json" };
+import pkg from "./package.json" with { type: "json" };
 let { name, version } = pkg;
 import fs from "fs";
 import path from "path";

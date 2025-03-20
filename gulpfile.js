@@ -165,7 +165,7 @@ export const dev = series(
 );
 
 export const prod = series(
-  series(exportDefault(false, "commonjs"), exportDefault(false, "es2022")),
+  series(exportDefault(true, "commonjs"), exportDefault(true, "es2022")),
   patchFiles(),
   chmodCLIFiles()
 );

@@ -15,7 +15,7 @@
  * @memberOf module:CLI
  */
 
-import { CliWrapper } from "./CliWrapper";
+import { CliWrapper } from "../CliWrapper";
 new CliWrapper()
   .run(process.argv)
   .then(() => {

@@ -16,7 +16,7 @@
       "./src"
     ],
     "exclude": [
-      "./src/cli.(ts|js)"
+      "cli.(ts|js)"
     ],
     "includePattern": "\\.(jsx|js|ts|tsx)$"
   },
@@ -32,14 +32,18 @@
       "useLongnameInNav": false
     },
     "better-docs": {
-      "name": "@decaf-ts/cli",
-      "title": "Decaf-ts' main Command Line Interface module",
+      "name": "ts-template",
+      "title": "TypeScript workspace template",
       "hideGenerator": true,
       "useLongnameInNav": false,
       "navLinks": [
         {
+          "label": "Test Results",
+          "href": "workdocs/reports/html/test-report.html"
+        },
+        {
           "label": "Test Coverage",
-          "href": "workdocs/coverage"
+          "href": "workdocs/reports/coverage"
         },
         {
           "label": "Github Repository",

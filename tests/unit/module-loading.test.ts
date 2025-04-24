@@ -9,7 +9,9 @@ describe("Module Loading", function () {
     // test invalid path
     await expect(() => CLIUtils.loadFromFile(file)).rejects.toThrow();
     // test valid path
-    const module = await CLIUtils.loadFromFile(path.join(process.cwd(), file));
+    const module = await CLIUtils.loadFromFile(
+      path.join(__dirname, "../..", `lib/demo/${CLI_FILE_NAME}.cjs`)
+    );
     expect(module).toBeDefined();
     expect(module.name).toBe("demo");
   });

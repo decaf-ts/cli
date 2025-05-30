@@ -1,8 +1,9 @@
 ![Banner](./workdocs/assets/Banner.png)
 
-## Decaf-ts cli
+## Decaf-ts CLI
 
-Exposes global cli tool that consumes other modules' clis under a standard command `decaf`
+A modular command-line interface framework for Decaf-ts that dynamically discovers and loads CLI modules from different packages. The CLI provides a unified entry point (`decaf`) for executing commands from various Decaf modules, making it easy to extend with new functionality without modifying the core CLI code.
+
 
 ![Licence](https://img.shields.io/github/license/decaf-ts/cli.svg?style=plastic)
 ![GitHub language count](https://img.shields.io/github/languages/count/decaf-ts/cli?style=plastic)
@@ -35,6 +36,44 @@ Documentation available [here](https://decaf-ts.github.io/cli/)
 
 ### Description
 
+The Decaf-ts CLI is a powerful and extensible command-line interface framework designed to provide a unified entry point for all Decaf-ts modules. It enables developers to create modular CLI commands that can be discovered and executed through a single command-line tool.
+
+#### Core Components
+
+1. **CliWrapper**: The central class that manages the discovery, loading, and execution of CLI modules. It:
+   - Crawls the filesystem to find CLI module files
+   - Dynamically loads modules using JavaScript's import system
+   - Registers commands with Commander.js
+   - Provides a simple API for running commands
+
+2. **CLIUtils**: A utility class that provides helper methods for:
+   - Loading modules from files
+   - Normalizing imports between ESM and CommonJS formats
+   - Retrieving package information (name, version)
+   - Initializing Commander.js commands
+
+3. **CLI Module System**: A standardized way for Decaf-ts packages to expose CLI functionality:
+   - Modules are discovered by filename (cli-module.js)
+   - Each module exports a function that returns a Commander.js Command object
+   - Modules can define their own subcommands and options
+
+#### Key Features
+
+- **Dynamic Discovery**: Automatically finds CLI modules in the project and its dependencies
+- **Modular Architecture**: Each module can define its own commands independently
+- **Extensible**: New commands can be added without modifying the core CLI code
+- **Unified Interface**: All commands are accessible through the single `decaf` command
+- **Self-documenting**: Leverages Commander.js to provide help text and usage information
+
+#### Technical Details
+
+The CLI uses a recursive filesystem crawler to find modules up to a configurable depth. It handles both ESM and CommonJS module formats, making it compatible with various JavaScript environments. The command structure follows the pattern:
+
+```
+decaf <module> <command> [options]
+```
+
+Where `<module>` is the name of a Decaf-ts module and `<command>` is a specific command provided by that module.
 
 
 ### How to Use
@@ -42,7 +81,123 @@ Documentation available [here](https://decaf-ts.github.io/cli/)
 - [Initial Setup](../../workdocs/tutorials/For%20Developers.md#_initial-setup_)
 - [Installation](../../workdocs/tutorials/For%20Developers.md#installation)
 
+#### Using the CLI
 
+The Decaf-ts CLI provides a unified command-line interface for all Decaf-ts modules. Here are some examples of how to use it:
+
+```bash
+# Get general help
+npx decaf help
+
+# List all available modules
+npx decaf list
+
+# Get help for a specific module
+npx decaf help <module-name>
+
+# Run a command from a specific module
+npx decaf <module-name> <command> [options]
+```
+
+#### Creating a CLI Module
+
+To create a CLI module for your Decaf-ts package, follow these steps:
+
+1. Create a file named `cli-module.ts` in your package:
+
+```typescript
+import { Command } from "commander";
+
+export default function myModule(): Command {
+  return new Command()
+    .command("hello <name>")
+    .description("Say hello to someone")
+    .action((name: string) => {
+      console.log(`Hello, ${name}!`);
+    });
+}
+```
+
+2. Configure your TypeScript build to output the CLI module:
+
+```json
+// tsconfig.cli.json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/cli"
+  },
+  "include": ["src/cli-module.ts"]
+}
+```
+
+3. Add a build step to your package.json:
+
+```json
+"scripts": {
+  "build:cli": "tsc --project tsconfig.cli.json"
+}
+```
+
+#### Using the CliWrapper Programmatically
+
+You can also use the CliWrapper class programmatically in your own code:
+
+```typescript
+import { CliWrapper } from "@decaf-ts/cli";
+
+// Create a new CLI wrapper with custom options
+const cli = new CliWrapper("./src", 2);
+
+// Run the CLI with custom arguments
+cli.run(process.argv)
+  .then(() => {
+    console.log("CLI commands executed successfully");
+  })
+  .catch((error) => {
+    console.error("Error executing CLI commands:", error);
+  });
+```
+
+#### Using CLIUtils
+
+The CLIUtils class provides utility methods for working with CLI modules:
+
+```typescript
+import { CLIUtils } from "@decaf-ts/cli";
+import { Command } from "commander";
+
+// Initialize a Command object with package information
+const command = new Command();
+CLIUtils.initialize(command, "./path/to/package");
+
+// Get package information
+const version = CLIUtils.packageVersion("./path/to/package");
+const name = CLIUtils.packageName("./path/to/package");
+
+// Load a CLI module from a file
+const modulePath = "./path/to/cli-module.js";
+CLIUtils.loadFromFile(modulePath)
+  .then((module) => {
+    const command = module();
+    console.log("Loaded command:", command.name());
+  })
+  .catch((error) => {
+    console.error("Error loading module:", error);
+  });
+```
+
+#### Demo CLI Module
+
+The CLI package includes a demo module that shows how to create a simple command:
+
+```typescript
+// Run the demo command
+npx decaf demo command "hello world"
+
+// Output:
+// executed demo command with type variable: hello world
+```
 
 
 ### Related

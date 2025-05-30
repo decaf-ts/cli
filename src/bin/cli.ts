@@ -2,15 +2,23 @@
  * BIN_CALL_PLACEHOLDER - DO NOT REMOVE
  */
 /**
- * @description Decaf-ts' CLI entry file
- * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}
- * within the @decaf-ts namespace and load then as subcommands
+ * @description Decaf-ts' CLI entry point
+ * @summary This file serves as the main executable entry point for the Decaf CLI. It creates a CliWrapper instance
+ * and runs it with the process arguments. The CLI will crawl the current working directory for files called
+ * CLI_FILE_NAME within the @decaf-ts namespace and load them as subcommands.
  *
  * @example
- * run module command     - $ npx decaf <module name> <module command> ...<module command options>
- * get module help        - $ npx decaf help <module name>;
- * list imported modules  - $ npx decaf list;
- * get cli help           - $ npx decaf help;
+ * // Run a module command
+ * $ npx decaf <module name> <module command> ...<module command options>
+ * 
+ * // Get help for a specific module
+ * $ npx decaf help <module name>
+ * 
+ * // List all imported modules
+ * $ npx decaf list
+ * 
+ * // Get general CLI help
+ * $ npx decaf help
  *
  * @memberOf module:CLI
  */

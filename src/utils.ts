@@ -4,16 +4,26 @@ import { Command } from "commander";
 import { CliModule } from "./types";
 
 /**
- * @description util class to retrieve versions and other information
- *
+ * @description Utility class for CLI operations
+ * @summary A static utility class that provides methods for loading modules, retrieving package information, and initializing CLI commands
+ * 
+ * @example
+ * // Initialize a Command object with package information
+ * const command = new Command();
+ * CLIUtils.initialize(command, './path/to/package');
+ * 
+ * // Load a CLI module from a file
+ * const module = await CLIUtils.loadFromFile('./path/to/cli-module.js');
+ * 
  * @class CLIUtils
- * @static
  */
 export class CLIUtils {
   /**
-   * @description Dynamically imports a cjs file into a decaf module
-   * @param {string} path
-   * @static
+   * @description Dynamically imports a module file
+   * @summary Loads a JavaScript file and returns it as a CliModule, handling both ESM and CommonJS formats
+   * 
+   * @param {string} path The file path to the module to load
+   * @return {Promise<CliModule>} A promise that resolves to the loaded CliModule
    */
   static async loadFromFile(path: string): Promise<CliModule> {
     try {
@@ -26,11 +36,12 @@ export class CLIUtils {
   }
 
   /**
-   * @description allows safe dynamic imports
-   * @summary property imports JS files regardless of esm status
+   * @description Normalizes module imports to handle both ESM and CommonJS formats
+   * @summary Properly imports JavaScript files regardless of their module format by handling the ESM wrapper for CommonJS modules
    *
-   * @typeParam T
-   * @param {Promise} importPromise
+   * @template T The type of the imported module
+   * @param {Promise<T>} importPromise The promise returned by the dynamic import
+   * @return {Promise<T>} A promise that resolves to the normalized module
    * @private
    */
   static async normalizeImport<T>(importPromise: Promise<T>): Promise<T> {
@@ -41,10 +52,12 @@ export class CLIUtils {
   }
 
   /**
-   * @description initializes the Cli object
+   * @description Initializes a Command object with package information
+   * @summary Sets up a Commander Command object with the package name, description, and version from the package.json file
    *
-   * @param {Command} command
-   * @param {string} [basePath] defaults to the current working directory
+   * @param {Command} command The Command object to initialize
+   * @param {string} [basePath] The base path where the package.json file is located, defaults to the current working directory
+   * @return {void}
    */
   static initialize(command: Command, basePath: string) {
     const name = CLIUtils.packageName(basePath);
@@ -55,9 +68,11 @@ export class CLIUtils {
   }
 
   /**
-   * @description retrieves and parses the package.json file
+   * @description Retrieves and parses the package.json file
+   * @summary Reads the package.json file from the specified path and parses it into a JavaScript object
    *
-   * @param {string} basePath
+   * @param {string} basePath The base path where the package.json file is located
+   * @return {Record<string, unknown>} The parsed package.json content as an object
    * @private
    */
   private static getPackage(basePath: string): Record<string, unknown> {
@@ -71,16 +86,22 @@ export class CLIUtils {
   }
 
   /**
-   * @description returns the package version
-   * @param {string} [basePath] defaults to current working dir
+   * @description Returns the version from package.json
+   * @summary Retrieves the version field from the package.json file at the specified path
+   *
+   * @param {string} basePath The base path where the package.json file is located
+   * @return {string} The package version string
    */
   static packageVersion(basePath: string): string {
     return CLIUtils.getPackage(basePath)["version"] as string;
   }
 
   /**
-   * @description returns the package name
-   * @param {string} [basePath] defaults to current working dir
+   * @description Returns the name from package.json
+   * @summary Retrieves the name field from the package.json file at the specified path and extracts the package name without the scope
+   *
+   * @param {string} basePath The base path where the package.json file is located
+   * @return {string} The package name without the scope (e.g., "cli" from "@decaf-ts/cli")
    */
   static packageName(basePath: string): string {
     return (CLIUtils.getPackage(basePath)["name"] as string).split("/")[1];

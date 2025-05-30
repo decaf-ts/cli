@@ -3,9 +3,12 @@ import { Command } from "commander";
 import { CLI_FILE_NAME } from "./constants";
 
 /**
- * @description describes the function type each decaf module must expose under {@link CLI_FILE_NAME}
- * @type CliModule
+ * @description Function type for Decaf CLI modules
+ * @summary Defines the signature for CLI module functions that each Decaf module must export under the CLI_FILE_NAME file
+ * The function should return a Command object or a Promise that resolves to a Command object
  *
- * @memberOf module.CLI.cli
+ * @typedef {Function} CliModule
+ * @return {Command|Promise<Command>} A Command object or Promise that resolves to a Command object
+ * @memberOf module:CLI
  */
 export type CliModule = () => Command | Promise<Command>;

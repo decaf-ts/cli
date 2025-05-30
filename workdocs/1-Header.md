@@ -1,5 +1,5 @@
 ![Banner](./workdocs/assets/Banner.png)
 
-## Decaf-ts cli
+## Decaf-ts CLI
 
-Exposes global cli tool that consumes other modules' clis under a standard command `decaf`
+A modular command-line interface framework for Decaf-ts that dynamically discovers and loads CLI modules from different packages. The CLI provides a unified entry point (`decaf`) for executing commands from various Decaf modules, making it easy to extend with new functionality without modifying the core CLI code.

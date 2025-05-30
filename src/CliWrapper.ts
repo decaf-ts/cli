@@ -5,12 +5,20 @@ import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
 
 /**
- * @summary Util class to handle CLI functionality from all Decaf modules
- * @description CLI handler class
- *
- * @param {string} [basepath] the base path to look for modules in. defaults to `./`
- * @param {string} [crawlLevels] folders to crawl to find modules from the basePath. defaults to 4
- *
+ * @description Utility class to handle CLI functionality from all Decaf modules
+ * @summary This class provides a wrapper around Commander.js to handle CLI commands from different Decaf modules.
+ * It crawls the filesystem to find CLI modules, loads them, and registers their commands.
+ * 
+ * @param {string} [basePath] The base path to look for modules in. Defaults to `./`
+ * @param {number} [crawlLevels] Number of folder levels to crawl to find modules from the basePath. Defaults to 4
+ * 
+ * @example
+ * // Create a new CLI wrapper and run it with custom options
+ * const cli = new CliWrapper('./src', 2);
+ * cli.run(process.argv).then(() => {
+ *   console.log('CLI commands executed successfully');
+ * });
+ * 
  * @class CliWrapper
  */
 export class CliWrapper {
@@ -23,7 +31,9 @@ export class CliWrapper {
   ) {}
 
   /**
-   * @description Retrieves and initializes the {@link Command} object
+   * @description Retrieves and initializes the Commander Command object
+   * @summary Lazy-loads the Command object, initializing it with the package name, description, and version
+   * @return {Command} The initialized Command object
    * @private
    */
   private get command() {
@@ -35,13 +45,31 @@ export class CliWrapper {
   }
 
   /**
-   * @description loads and registers module from a file
+   * @description Loads and registers a module from a file
+   * @summary Dynamically imports a CLI module from the specified file path, initializes it, and registers it in the modules collection
    *
-   * @param {string} filePath path to look for modules
-   * @param {string} rootPath repo root to find the package.json
-   * @return {string} the module name
+   * @param {string} filePath Path to the module file to load
+   * @param {string} rootPath Repository root path to find the package.json
+   * @return {Promise<string>} A promise that resolves to the module name
    *
    * @private
+   * @mermaid
+   * sequenceDiagram
+   *   participant CliWrapper
+   *   participant CLIUtils
+   *   participant Module
+   *   
+   *   CliWrapper->>CLIUtils: loadFromFile(filePath)
+   *   CLIUtils-->>CliWrapper: module
+   *   CliWrapper->>CliWrapper: Get module name
+   *   CliWrapper->>Command: new Command()
+   *   Command-->>CliWrapper: cmd
+   *   CliWrapper->>CLIUtils: initialize(cmd, path.dirname(rootPath))
+   *   CliWrapper->>Module: module()
+   *   Note over CliWrapper,Module: Handle Promise if needed
+   *   Module-->>CliWrapper: Command instance
+   *   CliWrapper->>CliWrapper: Store in modules[name]
+   *   CliWrapper-->>CliWrapper: Return name
    */
   private async load(filePath: string, rootPath: string): Promise<string> {
     let name;
@@ -62,9 +90,33 @@ export class CliWrapper {
   }
 
   /**
-   * @description finds all the cli modules in the basePath via {@link CliWrapper.crawl}
-   * and loads them
+   * @description Finds and loads all CLI modules in the basePath
+   * @summary Uses the crawl method to find all CLI modules in the specified base path, 
+   * then loads and registers each module as a subcommand
+   * 
+   * @return {Promise<void>} A promise that resolves when all modules are loaded
+   * 
    * @private
+   * @mermaid
+   * sequenceDiagram
+   *   participant CliWrapper
+   *   participant Filesystem
+   *   participant Module
+   *   
+   *   CliWrapper->>Filesystem: Join basePath with cwd
+   *   CliWrapper->>CliWrapper: crawl(basePath, crawlLevels)
+   *   CliWrapper-->>CliWrapper: modules[]
+   *   loop For each module
+   *     alt Not @decaf-ts/cli
+   *       CliWrapper->>CliWrapper: load(module, cwd)
+   *       CliWrapper-->>CliWrapper: name
+   *       CliWrapper->>CliWrapper: Check if command exists
+   *       alt Command doesn't exist
+   *         CliWrapper->>Command: command(name).addCommand(modules[name])
+   *       end
+   *     end
+   *   end
+   *   CliWrapper->>Console: Log loaded modules
    */
   private async boot() {
     const basePath = path.join(process.cwd(), this.basePath);
@@ -100,9 +152,13 @@ export class CliWrapper {
   }
 
   /**
-   * @description crawls the basePath up for 'levels' folders to find a module,eg a {@link CLI_FILE_NAME} named file
-   * @param {string} basePath the relative base batch to start searching in
-   * @param {number} [levels] the max number of levels to crawl. defaults to 2
+   * @description Recursively searches for CLI module files in the directory structure
+   * @summary Crawls the basePath up to the specified number of folder levels to find files named according to CLI_FILE_NAME
+   * 
+   * @param {string} basePath The absolute base path to start searching in
+   * @param {number} [levels=2] The maximum number of directory levels to crawl
+   * @return {string[]} An array of file paths to CLI modules
+   * 
    * @private
    */
   private crawl(basePath: string, levels: number = 2) {
@@ -119,9 +175,24 @@ export class CliWrapper {
   }
 
   /**
-   * @description runs the given command
+   * @description Executes the CLI with the provided arguments
+   * @summary Boots the CLI by loading all modules, then parses and executes the command specified in the arguments
    *
-   * @param {string[]} [args] args to run. defaults to process.argv
+   * @param {string[]} [args=process.argv] Command line arguments to parse and execute
+   * @return {Promise<void>} A promise that resolves when the command execution is complete
+   * 
+   * @mermaid
+   * sequenceDiagram
+   *   participant Client
+   *   participant CliWrapper
+   *   participant Command
+   *   
+   *   Client->>CliWrapper: run(args)
+   *   CliWrapper->>CliWrapper: boot()
+   *   Note over CliWrapper: Loads all modules
+   *   CliWrapper->>Command: parseAsync(args)
+   *   Command-->>CliWrapper: result
+   *   CliWrapper-->>Client: result
    */
   async run(args: string[] = process.argv) {
     await this.boot();

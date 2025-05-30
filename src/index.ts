@@ -3,7 +3,8 @@ export * from "./CliWrapper";
 /**
  * @description Decaf-ts' CLI module
  * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}
- * within the @decaf-ts namespace and load then as subcommands
+ * within the @decaf-ts namespace and load them as subcommands. It serves as the main entry point
+ * for the CLI functionality, exporting the CliWrapper class and VERSION constant.
  *
  * @example
  * run module command     - $ npx decaf <module name> <module command> ...<module command options>
@@ -15,23 +16,8 @@ export * from "./CliWrapper";
  */
 
 /**
- * @description Decaf-ts' CLI namespace
- * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}
- * within the @decaf-ts namespace and load then as subcommands
- *
- * @example
- * run module command     - $ npx decaf <module name> <module command> ...<module command options>
- * get module help        - $ npx decaf help <module name>;
- * list imported modules  - $ npx decaf list;
- * get cli help           - $ npx decaf help;
- *
- * @namespace cli
- * @memberOf module:CLI
- */
-
-/**
- * @summary stores the current package version
- * @description this is how you should document a constant
+ * @description Stores the current package version
+ * @summary A constant that holds the version string of the package, which is replaced during build
  * @const VERSION
  * @memberOf module:CLI
  */

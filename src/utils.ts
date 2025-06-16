@@ -104,6 +104,7 @@ export class CLIUtils {
    * @return {string} The package name without the scope (e.g., "cli" from "@decaf-ts/cli")
    */
   static packageName(basePath: string): string {
-    return (CLIUtils.getPackage(basePath)["name"] as string).split("/")[1];
+    const name = (CLIUtils.getPackage(basePath)["name"] as string).split("/");
+    return name[name.length - 1];
   }
 }

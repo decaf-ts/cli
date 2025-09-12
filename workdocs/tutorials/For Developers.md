@@ -46,7 +46,7 @@ The following npm scripts are available for development:
   have private dependencies);
 - `update-scripts`: will pull the GitHub actions, templates, and style configs from the [cli](https://github.com/decaf-ts/cli) repository, overwriting the existing.
 - `on-first-run`: will run the initial setup script,
-- `set-git-auth` - change git config to include the token (no longer requires manual auth);
+- `set-git-auth` - change git config to include the token (no longer requires manual auth). ***Only run once per repository***;
 - `postinstall` - will run only on the first installation to trigger the dep update. Will self-delete;
 - `flash-forward` - updates all dependencies. Take care, This may not be desirable is some cases;
 - `reset` - updates all dependencies. Take care, This may not be desirable is some cases;
@@ -58,6 +58,7 @@ The following npm scripts are available for development:
 - `test:all` - runs all tests;
 - `test:circular` - tests for circular dependencies;
 - `coverage` - runs all tests, calculates coverage (html/csv), generates a test report (HTML and junit) and generates badges for readme;
+- `prepare-pr`: same as prepare-release,
 - `lint` - runs es lint on the code folder;
 - `lint-fix` - tries to auto-fix the code folder;
 - `prepare-release` - defines the commands to run prior to a new tag (defaults to linting, building production code,
@@ -68,7 +69,7 @@ The following npm scripts are available for development:
   the `workdocs/resources` folder;
 - `uml` - compiles all PlantUML `*.puml` files in the `workdocs/uml` folder to png and moves them to
   the `workdocs/resources` folder;
-- `docs` - compiles all the coverage, drawings, uml, jsdocs, and md docs into a readable web page under `./docs`. Will be made available at [GitHub Pages](https://decaf-ts.github.io/cli);
+- `docs` - compiles all the coverage, drawings, uml, jsdocs, and md docs into a readable web page under `./docs`. Will be made available at [GitHub Pages](https://decaf-ts.github.io/ts-workspace);
 - `publish-docs` - publishes the content of `./workdocs/confluence` to confluence according to the config at `./workdocs/confluence/.markdown-confluence.json`.
   Uses [markdown-confluence](https://markdown-confluence.com/introduction.html). Check their documentation for configuration details;
 
@@ -77,12 +78,12 @@ The following npm scripts are available for development:
 This repo comes with eslint + prettier preconfigured to the default standards.
 
 Please configure your IDE to recognize these files and perform automatic validation and fixes on save:
- - Webstorm:
-   - eslint recommended setup [here](../assets/ws-eslint-setup.png)
-   - prettier recommended setup [here](../assets/ws-prettier-setup.png)
- - VSCode(ium):
-   - eslint recommended setup preconfigured under `.vscode/settings.json`
-   - prettier recommended setup preconfigured under `.vscode/settings.json`
+- Webstorm:
+    - eslint recommended setup preconfigured under `.idea/jsLinters/eslint.xml`
+    - prettier recommended setup preconfigured under `.idea/prettier.xml`
+- VSCode(ium):
+    - eslint recommended setup preconfigured under `.vscode/settings.json`
+    - prettier recommended setup preconfigured under `.vscode/settings.json`
 
 ## Testing
 
@@ -194,7 +195,7 @@ When the `-no-ci` flag is passed then you can:
 ### Repository Structure
 
 ```
-cli
+repository-root
 │
 │   .confluence-token               <-- stores confluence access token
 │   .dockerignore                   <-- Defines files by docker in the build image

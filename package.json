@@ -1,6 +1,6 @@
 {
   "name": "@decaf-ts/cli",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "cli for decaf-ts projects",
   "type": "module",
   "exports": {

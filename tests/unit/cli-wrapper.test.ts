@@ -1,9 +1,10 @@
 import { CliWrapper } from "../../src";
-import path from "path";
+import * as path from "path";
 import { CLI_FILE_NAME } from "../../src/constants";
 
 describe("CliWrapper", () => {
   let cli: CliWrapper;
+  const projectRoot = path.resolve(__dirname, "../..");
 
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -13,16 +14,18 @@ describe("CliWrapper", () => {
   });
 
   it("crawls properly from the given basePath", () => {
-    const files = cli["crawl"]("lib");
+    const files = cli["crawl"](path.join(projectRoot, "lib"));
     expect(files).toEqual(
-      expect.arrayContaining([`lib/demo/${CLI_FILE_NAME}.cjs`])
+      expect.arrayContaining([
+        path.join(projectRoot, `lib/demo/${CLI_FILE_NAME}.cjs`),
+      ])
     );
   });
 
   it("loads from a given file", async () => {
     await cli["load"](
-      path.join(process.cwd(), `lib/demo/${CLI_FILE_NAME}.cjs`),
-      process.cwd()
+      path.join(projectRoot, `lib/demo/${CLI_FILE_NAME}.cjs`),
+      projectRoot
     );
     expect(cli["modules"]["demo"]).toBeDefined();
   });

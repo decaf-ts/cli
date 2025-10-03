@@ -24,11 +24,14 @@ import { CLIUtils } from "./utils";
 export class CliWrapper {
   private _command?: Command;
   private modules: Record<string, Command> = {};
+  private readonly rootPath: string;
 
   constructor(
     private basePath: string = "./",
     private crawlLevels = 4
-  ) {}
+  ) {
+    this.rootPath = path.resolve(__dirname, "..");
+  }
 
   /**
    * @description Retrieves and initializes the Commander Command object
@@ -39,7 +42,7 @@ export class CliWrapper {
   private get command() {
     if (!this._command) {
       this._command = new Command();
-      CLIUtils.initialize(this._command, this.basePath);
+      CLIUtils.initialize(this._command, this.rootPath);
     }
     return this._command;
   }
@@ -77,7 +80,7 @@ export class CliWrapper {
       const module = await CLIUtils.loadFromFile(filePath);
       name = module.name;
       const cmd = new Command();
-      CLIUtils.initialize(cmd, path.dirname(rootPath));
+      CLIUtils.initialize(cmd, rootPath);
       let m = module();
       if (m instanceof Promise) m = await m;
       this.modules[name] = m;
@@ -119,7 +122,7 @@ export class CliWrapper {
    *   CliWrapper->>Console: Log loaded modules
    */
   private async boot() {
-    const basePath = path.join(process.cwd(), this.basePath);
+    const basePath = path.resolve(this.rootPath, this.basePath);
     const modules = this.crawl(basePath, this.crawlLevels);
     for (const module of modules) {
       if (module.includes("@decaf-ts/cli")) {
@@ -127,7 +130,7 @@ export class CliWrapper {
       }
       let name: string;
       try {
-        name = await this.load(module, process.cwd());
+        name = await this.load(module, this.rootPath);
       } catch (e: unknown) {
         console.error(e);
         continue;

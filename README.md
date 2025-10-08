@@ -78,8 +78,8 @@ Where `<module>` is the name of a Decaf-ts module and `<command>` is a specific 
 
 ### How to Use
 
-- [Initial Setup](../../workdocs/tutorials/For%20Developers.md#_initial-setup_)
-- [Installation](../../workdocs/tutorials/For%20Developers.md#installation)
+- [Initial Setup](./workdocs/tutorials/For%20Developers.md#_initial-setup_)
+- [Installation](./workdocs/tutorials/For%20Developers.md#installation)
 
 #### Using the CLI
 

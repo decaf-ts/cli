@@ -3,22 +3,36 @@ import fs from "fs";
 import path from "path";
 import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
+import { Logger, Logging } from "@decaf-ts/logging";
+import { style } from "styled-string-builder";
+
+const colors = [
+  "\x1b[38;5;215m", // soft orange
+  "\x1b[38;5;209m", // coral
+  "\x1b[38;5;205m", // pink
+  "\x1b[38;5;210m", // peachy
+  "\x1b[38;5;217m", // salmon
+  "\x1b[38;5;216m", // light coral
+  "\x1b[38;5;224m", // light peach
+  "\x1b[38;5;230m", // soft cream
+  "\x1b[38;5;230m", // soft cream
+];
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
  * @summary This class provides a wrapper around Commander.js to handle CLI commands from different Decaf modules.
  * It crawls the filesystem to find CLI modules, loads them, and registers their commands.
- * 
+ *
  * @param {string} [basePath] The base path to look for modules in. Defaults to `./`
  * @param {number} [crawlLevels] Number of folder levels to crawl to find modules from the basePath. Defaults to 4
- * 
+ *
  * @example
  * // Create a new CLI wrapper and run it with custom options
  * const cli = new CliWrapper('./src', 2);
  * cli.run(process.argv).then(() => {
  *   console.log('CLI commands executed successfully');
  * });
- * 
+ *
  * @class CliWrapper
  */
 export class CliWrapper {
@@ -61,7 +75,7 @@ export class CliWrapper {
    *   participant CliWrapper
    *   participant CLIUtils
    *   participant Module
-   *   
+   *
    *   CliWrapper->>CLIUtils: loadFromFile(filePath)
    *   CLIUtils-->>CliWrapper: module
    *   CliWrapper->>CliWrapper: Get module name
@@ -94,18 +108,18 @@ export class CliWrapper {
 
   /**
    * @description Finds and loads all CLI modules in the basePath
-   * @summary Uses the crawl method to find all CLI modules in the specified base path, 
+   * @summary Uses the crawl method to find all CLI modules in the specified base path,
    * then loads and registers each module as a subcommand
-   * 
+   *
    * @return {Promise<void>} A promise that resolves when all modules are loaded
-   * 
+   *
    * @private
    * @mermaid
    * sequenceDiagram
    *   participant CliWrapper
    *   participant Filesystem
    *   participant Module
-   *   
+   *
    *   CliWrapper->>Filesystem: Join basePath with cwd
    *   CliWrapper->>CliWrapper: crawl(basePath, crawlLevels)
    *   CliWrapper-->>CliWrapper: modules[]
@@ -157,11 +171,11 @@ export class CliWrapper {
   /**
    * @description Recursively searches for CLI module files in the directory structure
    * @summary Crawls the basePath up to the specified number of folder levels to find files named according to CLI_FILE_NAME
-   * 
+   *
    * @param {string} basePath The absolute base path to start searching in
    * @param {number} [levels=2] The maximum number of directory levels to crawl
    * @return {string[]} An array of file paths to CLI modules
-   * 
+   *
    * @private
    */
   private crawl(basePath: string, levels: number = 2) {
@@ -170,11 +184,113 @@ export class CliWrapper {
       file = path.join(basePath, file);
       if (fs.statSync(file).isDirectory()) {
         accum.push(...this.crawl(file, levels - 1));
-      } else if (file.match(new RegExp(`${CLI_FILE_NAME}.[cm]?js$`, "gm"))) {
+      } else if (file.match(new RegExp(`${CLI_FILE_NAME}\\.[cm]js$`, "gm"))) {
         accum.push(file);
       }
       return accum;
     }, []);
+  }
+
+  protected getSlogan(): string {
+    // Find nearest node_modules from this file's directory to survive bundling
+    const startDir = __dirname;
+    let current: string | undefined = startDir;
+    let nodeModulesDir: string | undefined;
+
+    try {
+      while (current && current !== path.parse(current).root) {
+        const candidate = path.join(current, "node_modules");
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+          nodeModulesDir = candidate;
+          break;
+        }
+        const parent = path.dirname(current);
+        if (parent === current) break;
+        current = parent;
+      }
+    } catch {
+      // ignore errors during traversal
+    }
+
+    const slogans: string[] = [];
+
+    if (nodeModulesDir) {
+      const scopeDir = path.join(nodeModulesDir, "@decaf-ts");
+      try {
+        if (fs.existsSync(scopeDir) && fs.statSync(scopeDir).isDirectory()) {
+          const pkgs = fs.readdirSync(scopeDir);
+          for (const pkg of pkgs) {
+            const depPath = path.join(scopeDir, pkg);
+            try {
+              const slogansPath = path.join(
+                depPath,
+                "workdocs",
+                "assets",
+                "slogans.json"
+              );
+              if (
+                fs.existsSync(slogansPath) &&
+                fs.statSync(slogansPath).isFile()
+              ) {
+                const raw = fs.readFileSync(slogansPath, "utf-8");
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  for (const s of parsed) {
+                    if (typeof s === "string" && s.trim().length > 0) {
+                      slogans.push(s.trim());
+                    }
+                  }
+                }
+              }
+            } catch {
+              // ignore per-package errors
+            }
+          }
+        }
+      } catch {
+        // ignore scope directory errors
+      }
+    }
+
+    if (slogans.length === 0) {
+      return "Decaf: strongly brewed TypeScript.";
+    }
+    const idx = Math.floor(Math.random() * slogans.length);
+    return slogans[idx];
+  }
+
+  protected printBanner(logger: Logger = Logging.get()) {
+    let message: string;
+    try {
+      message = this.getSlogan();
+    } catch {
+      message = "Decaf: strongly brewed TypeScript.";
+    }
+    const banner: string | string[] =
+      `#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 
+#      ( (        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
+#       ) )       ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
+#    [=======]    ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓██████▓▒░   ░▒▓█▓▒░        ░▒▓████████▓▒░ ░▒▓██████▓▒░            ░▒▓█▓▒░      ░▒▓██████▓▒░  
+#     \`-----´     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
+#                 ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
+#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓███████▓▒░  
+#`.split("\n");
+    const maxLength = banner.reduce(
+      (max, line) => Math.max(max, line.length),
+      0
+    );
+    banner.push(`#  ${message.padStart(maxLength - 3)}`);
+    banner.forEach((line, index) => {
+      const color = colors[index % colors.length] || "";
+      const logFn = logger ? logger.info.bind(logger) : console.log.bind(console);
+      try {
+        const msg = style(line || "").raw(color).text;
+        logFn(msg);
+      } catch {
+        // Fallback to plain output if styling fails for any reason
+        logFn(String(line || ""));
+      }
+    });
   }
 
   /**
@@ -183,13 +299,13 @@ export class CliWrapper {
    *
    * @param {string[]} [args=process.argv] Command line arguments to parse and execute
    * @return {Promise<void>} A promise that resolves when the command execution is complete
-   * 
+   *
    * @mermaid
    * sequenceDiagram
    *   participant Client
    *   participant CliWrapper
    *   participant Command
-   *   
+   *
    *   Client->>CliWrapper: run(args)
    *   CliWrapper->>CliWrapper: boot()
    *   Note over CliWrapper: Loads all modules
@@ -199,6 +315,7 @@ export class CliWrapper {
    */
   async run(args: string[] = process.argv) {
     await this.boot();
+    this.printBanner();
     return this.command.parseAsync(args);
   }
 }

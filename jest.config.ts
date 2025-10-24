@@ -7,9 +7,17 @@ const config: Config.InitialOptions = {
   testEnvironment: "node",
   testRegex: "/tests/.*\\.(test|spec)\\.(ts|tsx)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-  collectCoverage: false,
-  collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/cli.ts"],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/cli.ts",
+    "!src/CliWrapper.ts" // exclude heavy CLI wrapper drawing/binding from coverage metrics
+  ],
+  coverageThreshold: {
+    global: { branches: 25, functions: 90, lines: 95, statements: 95 },
+  },
   reporters: ["default"],
+  watchman: false,
 };
 
 export default config;

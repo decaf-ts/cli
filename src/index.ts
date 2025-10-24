@@ -14,11 +14,3 @@ export * from "./CliWrapper";
  *
  * @module CLI
  */
-
-/**
- * @description Stores the current package version
- * @summary A constant that holds the version string of the package, which is replaced during build
- * @const VERSION
- * @memberOf module:CLI
- */
-export const VERSION = "##VERSION##";

@@ -3,7 +3,10 @@
     "Slogan": "CLI: Your code’s command‑line calm in a caffeinated world.",
     "Tags": "CLI, Coffee‑themed, Developer"
   },
-  { "Slogan": "Run commands, not your heartbeat.", "Tags": "CLI, Calm, Humor" },
+  {
+    "Slogan": "Run commands, not your heartbeat.",
+    "Tags": "CLI, Calm, Humor"
+  },
   {
     "Slogan": "Install once. Ship features forever. No caffeine required.",
     "Tags": "Workflow, Coffee‑themed, Productivity"

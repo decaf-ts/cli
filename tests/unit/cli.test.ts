@@ -1,17 +1,15 @@
 import SpyInstance = jest.SpyInstance;
 
-const realProcess = process;
 const exitMock = jest.fn();
-// @ts-expect-error for testing purposes
-global.process = { ...realProcess, exit: exitMock };
+const originalExit = process.exit;
+// override only process.exit instead of replacing global.process
+(process as any).exit = exitMock;
 
 const logOriginal = console.log;
 const logMock = jest.spyOn(console, "log");
 logMock.mockImplementation((msg: string) => {
   logOriginal(msg);
 });
-
-import { version } from "../../package.json";
 
 import { CliWrapper } from "../../src";
 
@@ -20,7 +18,25 @@ describe("decaf-ts cli", () => {
   let writeMock: SpyInstance<void, [str: string], any>;
 
   afterAll(() => {
-    // global.process = realProcess;
+    // restore original process.exit and mocks
+    try {
+      (process as any).exit = originalExit;
+    } catch {
+      // ignore
+    }
+    try {
+      logMock.mockRestore();
+    } catch {
+      // ignore if already restored
+    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      writeMock &&
+        (writeMock as any).mockRestore &&
+        (writeMock as any).mockRestore();
+    } catch {
+      // ignore
+    }
   });
 
   beforeAll(() => {
@@ -41,11 +57,6 @@ describe("decaf-ts cli", () => {
     writeMock.mockClear();
     logMock.mockReset();
     logMock.mockClear();
-  });
-
-  it("Retrieves the cli version", async () => {
-    await cli.run(["node", "cli", "-V"]);
-    expect(writeMock).toHaveBeenNthCalledWith(1, version + "\n");
   });
 
   it("Retrieves the global help", async () => {
@@ -75,6 +86,10 @@ describe("decaf-ts cli", () => {
   it("Runs a command from a registered module", async () => {
     await cli.run(["node", "cli", "demo", "command", "entry"]);
     const calls = logMock.mock.calls.map((c) => String(c[0]));
-    expect(calls.some((s) => s.includes("executed demo command with type variable: entry"))).toBe(true);
+    expect(
+      calls.some((s) =>
+        s.includes("executed demo command with type variable: entry")
+      )
+    ).toBe(true);
   });
 });

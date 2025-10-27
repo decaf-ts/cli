@@ -1,9 +1,8 @@
-![Banner](./workdocs/assets/Banner.png)
+![Banner](./workdocs/assets/decaf-logo.svg)
 
 ## Decaf-ts CLI
 
 A modular command-line interface framework for Decaf-ts that dynamically discovers and loads CLI modules from different packages. The CLI provides a unified entry point (`decaf`) for executing commands from various Decaf modules, making it easy to extend with new functionality without modifying the core CLI code.
-
 
 ![Licence](https://img.shields.io/github/license/decaf-ts/cli.svg?style=plastic)
 ![GitHub language count](https://img.shields.io/github/languages/count/decaf-ts/cli?style=plastic)
@@ -33,6 +32,9 @@ A modular command-line interface framework for Decaf-ts that dynamically discove
 ![NPM Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Fbadges%2Fshields%2Fmaster%2Fpackage.json&label=NPM&query=$.engines.npm&colorB=purple)
 
 Documentation available [here](https://decaf-ts.github.io/cli/)
+
+Minimal size: 1.6 KB kb gzipped
+
 
 ### Description
 
@@ -198,6 +200,24 @@ npx decaf demo command "hello world"
 // Output:
 // executed demo command with type variable: hello world
 ```
+
+
+## Coding Principles
+
+- group similar functionality in folders (analog to namespaces but without any namespace declaration)
+- one class per file;
+- one interface per file (unless interface is just used as a type);
+- group types as other interfaces in a types.ts file per folder;
+- group constants or enums in a constants.ts file per folder;
+- group decorators in a decorators.ts file per folder;
+- always import from the specific file, never from a folder or index file (exceptions for dependencies on other packages);
+- prefer the usage of established design patters where applicable:
+  - Singleton (can be an anti-pattern. use with care);
+  - factory;
+  - observer;
+  - strategy;
+  - builder;
+  - etc;
 
 
 ### Related

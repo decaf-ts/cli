@@ -84,6 +84,6 @@
     "commander": "^13.1.0"
   },
   "peerDependencies": {
-    "@decaf-ts/decoration": "^0.0.22"
+    "@decaf-ts/decoration": "latest"
   }
 }

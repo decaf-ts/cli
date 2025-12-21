@@ -4,6 +4,8 @@
 
 A modular command-line interface framework for Decaf-ts that dynamically discovers and loads CLI modules from different packages. The CLI provides a unified entry point (`decaf`) for executing commands from various Decaf modules, making it easy to extend with new functionality without modifying the core CLI code.
 
+> Release docs refreshed on 2025-11-26. See [workdocs/reports/RELEASE_NOTES.md](./workdocs/reports/RELEASE_NOTES.md) for ticket summaries.
+
 ![Licence](https://img.shields.io/github/license/decaf-ts/cli.svg?style=plastic)
 ![GitHub language count](https://img.shields.io/github/languages/count/decaf-ts/cli?style=plastic)
 ![GitHub top language](https://img.shields.io/github/languages/top/decaf-ts/cli?style=plastic)
@@ -218,6 +220,9 @@ npx decaf demo command "hello world"
   - strategy;
   - builder;
   - etc;
+
+## Release Documentation Hooks
+Stay aligned with the automated release pipeline by reviewing [Release Notes](./workdocs/reports/RELEASE_NOTES.md) and [Dependencies](./workdocs/reports/DEPENDENCIES.md) after trying these recipes (updated on 2025-11-26).
 
 
 ### Related

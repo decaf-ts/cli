@@ -10,13 +10,13 @@
  * @example
  * // Run a module command
  * $ npx decaf <module name> <module command> ...<module command options>
- * 
+ *
  * // Get help for a specific module
  * $ npx decaf help <module name>
- * 
+ *
  * // List all imported modules
  * $ npx decaf list
- * 
+ *
  * // Get general CLI help
  * $ npx decaf help
  *
@@ -24,7 +24,7 @@
  */
 
 import { CliWrapper } from "../CliWrapper";
-new CliWrapper()
+new CliWrapper(process.cwd())
   .run(process.argv)
   .then(() => {
     console.log("Thank you for using decaf-ts' command line interface");

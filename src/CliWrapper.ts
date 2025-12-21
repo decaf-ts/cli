@@ -88,13 +88,13 @@ export class CliWrapper {
    *   CliWrapper->>CliWrapper: Store in modules[name]
    *   CliWrapper-->>CliWrapper: Return name
    */
-  private async load(filePath: string, rootPath: string): Promise<string> {
+  private async load(filePath: string): Promise<string> {
     let name;
     try {
       const module = await CLIUtils.loadFromFile(filePath);
       name = module.name;
       const cmd = new Command();
-      CLIUtils.initialize(cmd, rootPath);
+      CLIUtils.initialize(cmd, this.basePath);
       let m = module();
       if (m instanceof Promise) m = await m;
       this.modules[name] = m;
@@ -144,7 +144,7 @@ export class CliWrapper {
       }
       let name: string;
       try {
-        name = await this.load(module, this.rootPath);
+        name = await this.load(module);
       } catch (e: unknown) {
         console.error(e);
         continue;
@@ -282,7 +282,9 @@ export class CliWrapper {
     banner.push(`#  ${message.padStart(maxLength - 3)}`);
     banner.forEach((line, index) => {
       const color = colors[index % colors.length] || "";
-      const logFn = logger ? logger.info.bind(logger) : console.log.bind(console);
+      const logFn = logger
+        ? logger.info.bind(logger)
+        : console.log.bind(console);
       try {
         const msg = style(line || "").raw(color).text;
         logFn(msg);

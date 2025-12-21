@@ -23,10 +23,7 @@ describe("CliWrapper", () => {
   });
 
   it("loads from a given file", async () => {
-    await cli["load"](
-      path.join(projectRoot, `lib/demo/${CLI_FILE_NAME}.cjs`),
-      projectRoot
-    );
+    await cli["load"](path.join(projectRoot, `lib/demo/${CLI_FILE_NAME}.cjs`));
     expect(cli["modules"]["demo"]).toBeDefined();
   });
 

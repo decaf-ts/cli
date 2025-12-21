@@ -91,16 +91,21 @@ export class CliWrapper {
   private async load(filePath: string): Promise<string> {
     let name;
     try {
-      const module = await CLIUtils.loadFromFile(filePath);
-      name = module.name;
-      const cmd = new Command();
-      CLIUtils.initialize(cmd, this.basePath);
-      let m = module();
-      if (m instanceof Promise) m = await m;
-      this.modules[name] = m;
+      let module = await CLIUtils.loadFromFile(filePath);
+
+      name = module.name as string;
+      if (module instanceof Function) module = module() as any;
+      if (module instanceof Promise) module = await module;
+
+      if (!(module instanceof Command))
+        throw new Error(
+          `You should export the instantiated Commands class as default.`
+        );
+
+      this.modules[name] = module;
     } catch (e: unknown) {
       throw new Error(
-        `failed to load module ${name || "unnamed"} under ${filePath}: ${e instanceof Error ? e.message : e}`
+        `failed to load module under ${filePath}: ${e instanceof Error ? e.message : e}`
       );
     }
     return name;

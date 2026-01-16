@@ -3,20 +3,16 @@ import fs from "fs";
 import path from "path";
 import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
-import { Logger, Logging } from "@decaf-ts/logging";
+import {
+  Environment,
+  LoggedClass,
+  LoggedEnvironment,
+  Logger,
+  Logging,
+} from "@decaf-ts/logging";
 import { style } from "styled-string-builder";
-
-const colors = [
-  "\x1b[38;5;215m", // soft orange
-  "\x1b[38;5;209m", // coral
-  "\x1b[38;5;205m", // pink
-  "\x1b[38;5;210m", // peachy
-  "\x1b[38;5;217m", // salmon
-  "\x1b[38;5;216m", // light coral
-  "\x1b[38;5;224m", // light peach
-  "\x1b[38;5;230m", // soft cream
-  "\x1b[38;5;230m", // soft cream
-];
+import { banners, colorPalettes } from "./banners";
+import { readSlogans } from "./slogans";
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
@@ -35,15 +31,20 @@ const colors = [
  *
  * @class CliWrapper
  */
-export class CliWrapper {
+export class CliWrapper extends LoggedClass {
   private _command?: Command;
   private modules: Record<string, Command> = {};
   private readonly rootPath: string;
+
+  private slogans: Record<string, { Slogan: string }[]> = {};
+
+  private static env = LoggedEnvironment;
 
   constructor(
     private basePath: string = "./",
     private crawlLevels = 4
   ) {
+    super();
     this.rootPath = path.resolve(__dirname, "..");
   }
 
@@ -89,6 +90,7 @@ export class CliWrapper {
    *   CliWrapper-->>CliWrapper: Return name
    */
   private async load(filePath: string): Promise<string> {
+    const log = this.log.for(this.load);
     let name;
     try {
       let module = await CLIUtils.loadFromFile(filePath);
@@ -108,6 +110,14 @@ export class CliWrapper {
         `failed to load module under ${filePath}: ${e instanceof Error ? e.message : e}`
       );
     }
+
+    try {
+      const slogans = readSlogans(log, name);
+      if (slogans) this.slogans[name] = slogans;
+    } catch (e: unknown) {
+      console.error(`Failed to load slogans for ${name}: ${e}`);
+    }
+
     return name;
   }
 
@@ -141,6 +151,7 @@ export class CliWrapper {
    *   CliWrapper->>Console: Log loaded modules
    */
   private async boot() {
+    const log = this.log.for(this.boot);
     const basePath = path.resolve(this.rootPath, this.basePath);
     const modules = this.crawl(basePath, this.crawlLevels);
     for (const module of modules) {
@@ -161,12 +172,12 @@ export class CliWrapper {
         )
       )
         try {
-          this.command.command(name).addCommand(this.modules[name]);
+          this.command.addCommand(this.modules[name]);
         } catch (e: unknown) {
           console.error(e);
         }
     }
-    console.log(
+    log.debug(
       `loaded modules:\n${Object.keys(this.modules)
         .map((k) => `- ${k}`)
         .join("\n")}`
@@ -271,22 +282,29 @@ export class CliWrapper {
     } catch {
       message = "Decaf: strongly brewed TypeScript.";
     }
-    const banner: string | string[] =
-      `#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓████████▓▒░       ░▒▓████████▓▒░  ░▒▓███████▓▒░ 
-#      ( (        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
-#       ) )       ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓█▓▒░        
-#    [=======]    ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓██████▓▒░   ░▒▓█▓▒░        ░▒▓████████▓▒░ ░▒▓██████▓▒░            ░▒▓█▓▒░      ░▒▓██████▓▒░  
-#     \`-----´     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
-#                 ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░            ░▒▓█▓▒░ 
-#                 ░▒▓███████▓▒░  ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░                 ░▒▓█▓▒░     ░▒▓███████▓▒░  
-#`.split("\n");
+
+    // Select random banner and color palette
+    const bannerTemplate = banners[Math.floor(Math.random() * banners.length)];
+    const paletteKeys = Object.keys(colorPalettes);
+    const palette =
+      colorPalettes[
+        paletteKeys[Math.floor(Math.random() * paletteKeys.length)]
+      ];
+
+    const banner = bannerTemplate.split("\n").filter((line) => line.length > 0);
     const maxLength = banner.reduce(
       (max, line) => Math.max(max, line.length),
       0
     );
-    banner.push(`#  ${message.padStart(maxLength - 3)}`);
+
+    if (maxLength > 0) {
+      banner.push(message.padStart(maxLength));
+    } else {
+      banner.push(message);
+    }
+
     banner.forEach((line, index) => {
-      const color = colors[index % colors.length] || "";
+      const color = palette[index % palette.length] || "";
       const logFn = logger
         ? logger.info.bind(logger)
         : console.log.bind(console);
@@ -324,5 +342,13 @@ export class CliWrapper {
     await this.boot();
     this.printBanner();
     return this.command.parseAsync(args);
+  }
+
+  static accumulateEnvironment(obj: object) {
+    this.env = this.env.accumulate(obj) as any;
+  }
+
+  static getEnv() {
+    return this.env;
   }
 }

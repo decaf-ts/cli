@@ -72,7 +72,7 @@ describe("decaf-ts cli", () => {
         "  -h, --help      display help for command\n" +
         "\n" +
         "Commands:\n" +
-        "  demo\n" +
+        "  command <type>  A demo command\n" +
         "  help [command]  display help for command\n"
     );
   });

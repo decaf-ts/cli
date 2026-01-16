@@ -1,4 +1,4 @@
-import demo from "../../src/demo/cli-module";
+import demo from "../../src/utils-module/cli-module";
 import { Command } from "commander";
 
 describe("demo-module", () => {

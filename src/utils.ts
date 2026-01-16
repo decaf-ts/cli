@@ -6,22 +6,22 @@ import { CliModule } from "./types";
 /**
  * @description Utility class for CLI operations
  * @summary A static utility class that provides methods for loading modules, retrieving package information, and initializing CLI commands
- * 
+ *
  * @example
  * // Initialize a Command object with package information
  * const command = new Command();
  * CLIUtils.initialize(command, './path/to/package');
- * 
+ *
  * // Load a CLI module from a file
  * const module = await CLIUtils.loadFromFile('./path/to/cli-module.js');
- * 
+ *
  * @class CLIUtils
  */
 export class CLIUtils {
   /**
    * @description Dynamically imports a module file
    * @summary Loads a JavaScript file and returns it as a CliModule, handling both ESM and CommonJS formats
-   * 
+   *
    * @param {string} path The file path to the module to load
    * @return {Promise<CliModule>} A promise that resolves to the loaded CliModule
    */
@@ -62,7 +62,7 @@ export class CLIUtils {
   static initialize(command: Command, basePath: string) {
     const name = CLIUtils.packageName(basePath);
     command
-      .name(name)
+      .name("decaf")
       .description(`Runs ${name} related commands`)
       .version(CLIUtils.packageVersion(basePath));
   }

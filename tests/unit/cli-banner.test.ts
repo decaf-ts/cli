@@ -2,8 +2,8 @@ import { CliWrapper } from "../../src";
 
 class TestCli extends CliWrapper {
   // expose protected for testing via public wrapper
-  public testPrintBanner(logger: any) {
-    return (this as any).printBanner(logger);
+  public testPrintBanner() {
+    return (this as any).printBanner();
   }
   protected getSlogan(): string {
     return "Test Slogan";
@@ -11,15 +11,16 @@ class TestCli extends CliWrapper {
 }
 
 describe("CliWrapper banner", () => {
-  it("prints colored banner lines using logger", () => {
+  it("prints colored banner lines using stdout", () => {
     const cli = new TestCli("./");
-    const info = jest.fn();
-    const logger = { info } as any;
-    cli.testPrintBanner(logger);
-    // Should print multiple lines including the slogan line
-    expect(info).toHaveBeenCalled();
-    const calls = info.mock.calls.map((c: any[]) => String(c[0]));
-    expect(calls.some((s: string) => s.includes("Test Slogan"))).toBe(true);
+    const write = jest
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
+    const stopAnimation = cli.testPrintBanner();
+    stopAnimation?.();
+    expect(write).toHaveBeenCalled();
+    const entries = write.mock.calls.map((c) => String(c[0]));
+    expect(entries.some((s) => s.includes("Test Slogan"))).toBe(true);
+    write.mockRestore();
   });
 });
-

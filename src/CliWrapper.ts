@@ -3,16 +3,11 @@ import fs from "fs";
 import path from "path";
 import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
-import {
-  Environment,
-  LoggedClass,
-  LoggedEnvironment,
-  Logger,
-  Logging,
-} from "@decaf-ts/logging";
+import { LoggedClass, Logger, Logging } from "@decaf-ts/logging";
 import { style } from "styled-string-builder";
 import { banners, colorPalettes } from "./banners";
 import { readSlogans } from "./slogans";
+import { DecafCLieEnvironment } from "./environment";
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
@@ -38,7 +33,7 @@ export class CliWrapper extends LoggedClass {
 
   private slogans: Record<string, { Slogan: string }[]> = {};
 
-  private static env = LoggedEnvironment;
+  private static env = DecafCLieEnvironment;
 
   constructor(
     private basePath: string = "./",
@@ -340,15 +335,11 @@ export class CliWrapper extends LoggedClass {
    */
   async run(args: string[] = process.argv) {
     await this.boot();
-    this.printBanner();
+    if (DecafCLieEnvironment.banner) this.printBanner();
     return this.command.parseAsync(args);
   }
 
   static accumulateEnvironment(obj: object) {
     this.env = this.env.accumulate(obj) as any;
-  }
-
-  static getEnv() {
-    return this.env;
   }
 }

@@ -1,4 +1,4 @@
-import demo from "../../src/utils-module/cli-module";
+import demo from "../../src/demo/cli-module";
 import { Command } from "commander";
 
 describe("demo-module", () => {
@@ -19,7 +19,7 @@ describe("demo-module", () => {
       logOriginal(msg);
     });
 
-    await cmd.parseAsync(["demo", "command", "test-type"]);
+    await cmd.parseAsync(["node", "cli", "command", "test-type"]);
 
     expect(logMock).toBeCalledTimes(1);
     expect(logMock).toHaveBeenCalledWith(

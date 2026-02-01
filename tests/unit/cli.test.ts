@@ -63,7 +63,7 @@ describe("decaf-ts cli", () => {
     await cli.run(["node", "cli", "-h"]);
     expect(writeMock).toHaveBeenCalledTimes(1);
     expect(writeMock).toHaveBeenCalledWith(
-      "Usage: cli [options] [command]\n" +
+      "Usage: decaf [options] [command]\n" +
         "\n" +
         "Runs cli related commands\n" +
         "\n" +
@@ -72,7 +72,8 @@ describe("decaf-ts cli", () => {
         "  -h, --help      display help for command\n" +
         "\n" +
         "Commands:\n" +
-        "  command <type>  A demo command\n" +
+        "  demo            Demo commands\n" +
+        "  utils           utilitarian cli commands for the decaf-ts framework\n" +
         "  help [command]  display help for command\n"
     );
   });

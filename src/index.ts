@@ -1,5 +1,5 @@
 export * from "./CliWrapper";
-
+export * from "./environment";
 /**
  * @description Decaf-ts' CLI module
  * @summary This file will crawl the current working directory for files called {@link CLI_FILE_NAME}

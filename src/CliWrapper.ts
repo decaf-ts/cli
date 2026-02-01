@@ -36,7 +36,7 @@ export class CliWrapper extends LoggedClass {
   private static env = DecafCLieEnvironment;
 
   constructor(
-    private basePath: string = "./",
+    private basePath: string = DecafCLieEnvironment.cliModuleRoot,
     private crawlLevels = 4
   ) {
     super();
@@ -341,5 +341,9 @@ export class CliWrapper extends LoggedClass {
 
   static accumulateEnvironment(obj: object) {
     this.env = this.env.accumulate(obj) as any;
+  }
+
+  static getEnv() {
+    return this.env;
   }
 }

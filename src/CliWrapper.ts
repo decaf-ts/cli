@@ -4,10 +4,11 @@ import path from "path";
 import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
 import { LoggedClass } from "@decaf-ts/logging";
-import { style } from "styled-string-builder";
 import { banners, colorPalettes } from "./banners";
 import { readSlogans } from "./slogans";
 import { DecafCLieEnvironment } from "./environment";
+
+const MIN_BANNER_WIDTH = 92;
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
@@ -96,7 +97,7 @@ export class CliWrapper extends LoggedClass {
       if (module instanceof Function) module = module() as any;
       if (module instanceof Promise) module = await module;
 
-      if (!(module instanceof Command))
+      if (!this.isCommandInstance(module))
         throw new Error(
           `You should export the instantiated Commands class as default.`
         );
@@ -109,7 +110,7 @@ export class CliWrapper extends LoggedClass {
     }
 
     try {
-      const moduleRoot = path.dirname(filePath);
+      const moduleRoot = this.findModuleRoot(path.dirname(filePath));
       const records = readSlogans(log, moduleRoot);
       const strings = this.extractSloganStrings(records);
       if (strings.length) {
@@ -208,6 +209,21 @@ export class CliWrapper extends LoggedClass {
     }, []);
   }
 
+  private findModuleRoot(initialDir: string): string {
+    let current = initialDir;
+    const root = path.parse(initialDir).root;
+    while (true) {
+      if (fs.existsSync(path.join(current, "package.json"))) {
+        return current;
+      }
+      if (current === root) break;
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+    return initialDir;
+  }
+
   protected getSlogan(priorityModule?: string): string {
     this.ensureGlobalSlogans();
     const priority = priorityModule
@@ -215,24 +231,20 @@ export class CliWrapper extends LoggedClass {
       : [];
     const others = this.otherSlogans(priorityModule);
 
-    const hasPriority = priority.length > 0;
-    const hasOthers = others.length > 0;
-
-    if (!hasPriority && !hasOthers) {
+    if (!priority.length && !others.length) {
       return "Decaf: strongly brewed TypeScript.";
     }
 
-    if (hasPriority && hasOthers) {
-      const usePriority = Math.random() < 0.5;
-      const pool = usePriority ? priority : others;
-      return pool[Math.floor(Math.random() * pool.length)];
+    if (!priority.length) {
+      return others[Math.floor(Math.random() * others.length)];
     }
 
-    if (hasPriority) {
+    if (!others.length) {
       return priority[Math.floor(Math.random() * priority.length)];
     }
 
-    return others[Math.floor(Math.random() * others.length)];
+    const pool = this.buildBalancedSloganPool(priority, others);
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   private otherSlogans(priorityModule?: string): string[] {
@@ -245,27 +257,39 @@ export class CliWrapper extends LoggedClass {
     return [...this.globalSlogans, ...modules];
   }
 
+  private buildBalancedSloganPool(primary: string[], secondary: string[]): string[] {
+    const targetLength = Math.max(primary.length, secondary.length);
+    const primaryBucket = this.repeatToLength(primary, targetLength);
+    const secondaryBucket = this.repeatToLength(secondary, targetLength);
+    const result: string[] = [];
+    for (let i = 0; i < targetLength; i++) {
+      result.push(primaryBucket[i]);
+      result.push(secondaryBucket[i]);
+    }
+    return result;
+  }
+
+  private repeatToLength(values: string[], targetLength: number): string[] {
+    if (!values.length || targetLength <= 0) return [];
+    return Array.from({ length: targetLength }, (_, index) => {
+      return values[index % values.length];
+    });
+  }
+
   private ensureGlobalSlogans() {
     if (this.globalSlogans.length > 0) return;
     const log = this.log.for(this.ensureGlobalSlogans);
     const gathered: string[] = [];
 
-    this.collectSlogansFromPath(log, this.rootPath, gathered);
+    const basePaths = [this.rootPath];
+    const hostPath = path.resolve(this.rootPath, this.basePath);
+    if (hostPath !== this.rootPath) {
+      basePaths.push(hostPath);
+    }
 
-    const nodeModulesDir = this.findNearestNodeModules();
-    if (nodeModulesDir) {
-      const scopeDir = path.join(nodeModulesDir, "@decaf-ts");
-      try {
-        if (fs.existsSync(scopeDir) && fs.statSync(scopeDir).isDirectory()) {
-          const pkgs = fs.readdirSync(scopeDir);
-          for (const pkg of pkgs) {
-            const depPath = path.join(scopeDir, pkg);
-            this.collectSlogansFromPath(log, depPath, gathered);
-          }
-        }
-      } catch {
-        // ignore scope directory errors
-      }
+    for (const candidate of basePaths) {
+      this.collectSlogansFromPath(log, candidate, gathered);
+      this.collectSlogansFromScope(log, candidate, gathered);
     }
 
     this.globalSlogans = gathered;
@@ -289,6 +313,33 @@ export class CliWrapper extends LoggedClass {
     }
   }
 
+  private collectSlogansFromScope(
+    log: any,
+    basePath: string,
+    accumulator: string[]
+  ) {
+    const scopeDir = path.join(basePath, "node_modules", "@decaf-ts");
+    try {
+      if (!fs.existsSync(scopeDir) || !fs.statSync(scopeDir).isDirectory()) {
+        return;
+      }
+      const pkgs = fs.readdirSync(scopeDir);
+      for (const pkg of pkgs) {
+        const candidate = path.join(scopeDir, pkg);
+        try {
+          if (!fs.existsSync(candidate) || !fs.statSync(candidate).isDirectory()) {
+            continue;
+          }
+          this.collectSlogansFromPath(log, candidate, accumulator);
+        } catch {
+          // ignore individual package errors
+        }
+      }
+    } catch {
+      // ignore scope directory errors
+    }
+  }
+
   private extractSloganStrings(records?: { Slogan: string }[]): string[] {
     if (!records || !records.length) return [];
     return records
@@ -296,22 +347,15 @@ export class CliWrapper extends LoggedClass {
       .filter((value) => value.length > 0);
   }
 
-  private findNearestNodeModules(): string | undefined {
-    let current: string | undefined = __dirname;
-    while (current && current !== path.parse(current).root) {
-      const candidate = path.join(current, "node_modules");
-      try {
-        if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
-          return candidate;
-        }
-      } catch {
-        // ignore
-      }
-      const parent = path.dirname(current);
-      if (parent === current) break;
-      current = parent;
-    }
-    return undefined;
+  private isCommandInstance(value: unknown): value is Command {
+    if (value instanceof Command) return true;
+    if (!value || typeof value !== "object") return false;
+    const candidate = value as Command;
+    return (
+      typeof candidate.parseAsync === "function" &&
+      typeof candidate.addCommand === "function" &&
+      typeof candidate.name === "function"
+    );
   }
 
   protected printBanner(args?: string[]) {
@@ -331,17 +375,24 @@ export class CliWrapper extends LoggedClass {
         paletteKeys[Math.floor(Math.random() * paletteKeys.length)]
       ];
 
-    const banner = bannerTemplate.split("\n").filter((line) => line.length > 0);
-    const maxLength = banner.reduce(
+    const rawLines = bannerTemplate
+      .split("\n")
+      .filter((line) => line.length > 0);
+    const maxLineWidth = rawLines.reduce<number>(
       (max, line) => Math.max(max, line.length),
       0
     );
+    const messageWidth = Math.max(0, message.length);
+    const targetWidth = Math.max(
+      MIN_BANNER_WIDTH,
+      maxLineWidth,
+      messageWidth
+    );
+    const banner = rawLines.map((line) => line.padEnd(targetWidth));
+    banner.push(message.padStart(targetWidth));
 
-    if (maxLength > 0) {
-      banner.push(message.padStart(maxLength));
-    } else {
-      banner.push(message);
-    }
+    const reservedLines = "\n".repeat(Math.max(0, banner.length));
+    process.stdout.write(reservedLines);
 
     const stop = this.animateBanner(banner, palette);
     this.bannerAnimation = stop;
@@ -382,32 +433,38 @@ export class CliWrapper extends LoggedClass {
     const totalFrames = Math.max(1, Math.ceil(duration / frameInterval));
     let framesRendered = 0;
     let stopped = false;
-    // eslint-disable-next-line prefer-const
     let timer: NodeJS.Timeout | undefined;
 
+    const paletteLength = Math.max(1, palette.length);
+    const colorOffsets = lines.map((_, index) => index % paletteLength);
+    const reset = "\x1b[0m";
+    const height = lines.length;
+    const moveUp = `\u001b[${height}A`;
+
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      if (timer) {
+        clearInterval(timer);
+        timer = undefined;
+      }
+    };
+
     const renderFrame = () => {
-      const offset = framesRendered % palette.length;
+      const offset = framesRendered % paletteLength;
       const colored = lines.map((line, index) => {
-        const color = palette[(index + offset) % palette.length] || "";
-        return style(line || "").raw(color).text;
+        const colorIndex = (colorOffsets[index] + offset) % paletteLength;
+        const color = palette[colorIndex] || "";
+        return `${color}${line}${reset}`;
       });
 
-      if (framesRendered > 0) {
-        process.stdout.write(`\u001b[${lines.length}F`);
-      }
-
+      process.stdout.write(moveUp);
       for (const line of colored) {
         process.stdout.write("\u001b[2K");
         process.stdout.write(`${line}\n`);
       }
 
       framesRendered++;
-    };
-
-    const stop = () => {
-      if (stopped) return;
-      stopped = true;
-      if (timer) clearInterval(timer);
     };
 
     renderFrame();

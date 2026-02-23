@@ -21,7 +21,7 @@ describe("demo-module", () => {
 
     await cmd.parseAsync(["node", "cli", "command", "test-type"]);
 
-    expect(logMock).toBeCalledTimes(1);
+    expect(logMock).toHaveBeenCalledTimes(1);
     expect(logMock).toHaveBeenCalledWith(
       `executed demo command with type variable: test-type`
     );

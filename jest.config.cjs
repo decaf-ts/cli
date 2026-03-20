@@ -6,15 +6,7 @@ const config = {
   testEnvironment: "node",
   testRegex: "/tests/.*\\.(test|spec)\\.(ts|tsx)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-  collectCoverage: true,
-  collectCoverageFrom: [
-    "src/**/*.{js,jsx,ts,tsx}",
-    "!src/**/cli.ts",
-    "!src/CliWrapper.ts", // exclude heavy CLI wrapper drawing/binding from coverage metrics
-  ],
-  coverageThreshold: {
-    global: { branches: 0, functions: 0, lines: 0, statements: 0 },
-  },
+  collectCoverage: false,
   reporters: ["default"],
   watchman: false,
 };

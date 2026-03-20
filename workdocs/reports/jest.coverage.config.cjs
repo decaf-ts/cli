@@ -5,6 +5,11 @@ const config = {
   ...conf,
   collectCoverage: true,
   coverageDirectory: "./workdocs/reports/coverage",
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/cli.ts",
+    "!src/CliWrapper.ts", // exclude heavy CLI wrapper drawing/binding from coverage metrics
+  ],
   reporters: [
     "default",
     [

@@ -20,9 +20,22 @@ import utilsModule from "./utils-module/cli-module";
 
 const MIN_BANNER_WIDTH = 92;
 const DEFAULT_LOG_LEVEL = LogLevel.info;
-const LOG_FORMAT = DecafCLieEnvironment.format.includes("{pId}")
-  ? DecafCLieEnvironment.format
-  : `{pId}|${DecafCLieEnvironment.format}`;
+const EFFECTIVE_FORMAT = DecafCLieEnvironment.format;
+const BASE_PATTERN =
+  typeof DecafCLieEnvironment.pattern === "string"
+    ? DecafCLieEnvironment.pattern
+    : Logging.getConfig().pattern ?? "{message}";
+const PATTERN_WITH_PID = BASE_PATTERN.includes("{pId}")
+  ? BASE_PATTERN
+  : `{pId}|${BASE_PATTERN}`;
+
+const applyLoggingConfig = (level: LogLevel) => {
+  Logging.setConfig({
+    level,
+    format: EFFECTIVE_FORMAT,
+    pattern: PATTERN_WITH_PID,
+  });
+};
 const CLI_PACKAGE_NAME = "@decaf-ts/cli";
 
 type CliModuleFactory = () => Command;
@@ -53,10 +66,7 @@ try {
     // swallow: custom descriptor is a cosmetic enhancement
   }
 }
-Logging.setConfig({
-  level: DEFAULT_LOG_LEVEL,
-  format: LOG_FORMAT,
-});
+applyLoggingConfig(DEFAULT_LOG_LEVEL);
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
@@ -228,6 +238,7 @@ export class CliWrapper extends LoggedClass {
   private async boot() {
     const log = this.log.for(this.boot);
     this.ensureLogLevelSupport(this.command);
+    this.updateLogLevel(DEFAULT_LOG_LEVEL);
     this.loadIncludedModules();
 
     const basePath = this.getHostPath();
@@ -407,10 +418,7 @@ export class CliWrapper extends LoggedClass {
 
   private updateLogLevel(level?: string) {
     const resolvedLevel = this.resolveLogLevel(level);
-    Logging.setConfig({
-      level: resolvedLevel,
-      format: LOG_FORMAT,
-    });
+    applyLoggingConfig(resolvedLevel);
   }
 
   private resolveLogLevel(level?: string): LogLevel {

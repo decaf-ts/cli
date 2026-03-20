@@ -8,12 +8,25 @@ import {
   LogParameterDescriptor,
   Logging,
   logParameterRegistry,
+  Logger,
 } from "@decaf-ts/logging";
 import { banners, colorPalettes } from "./banners";
 import { readSlogans } from "./slogans";
 import { DecafCLieEnvironment } from "./environment";
+import buildModule from "./build-module/cli-module";
+import releaseModule from "./release-module/cli-module";
+import utilsModule from "./utils-module/cli-module";
 
 const MIN_BANNER_WIDTH = 92;
+const CLI_PACKAGE_NAME = "@decaf-ts/cli";
+
+type CliModuleFactory = () => Command;
+
+const INCLUDED_MODULE_FACTORIES: CliModuleFactory[] = [
+  buildModule,
+  releaseModule,
+  utilsModule,
+];
 
 const pIdDescriptor: LogParameterDescriptor = {
   key: "pId",
@@ -61,6 +74,7 @@ Logging.setConfig({
 export class CliWrapper extends LoggedClass {
   private _command?: Command;
   private modules: Record<string, Command> = {};
+  private includedModuleNames: Set<string> = new Set();
   private readonly rootPath: string;
 
   private moduleSlogans: Record<string, string[]> = {};
@@ -118,9 +132,10 @@ export class CliWrapper extends LoggedClass {
    *   CliWrapper->>CliWrapper: Store in modules[name]
    *   CliWrapper-->>CliWrapper: Return name
    */
-  private async load(filePath: string): Promise<string> {
+  private async load(filePath: string): Promise<string | undefined> {
     const log = this.log.for(this.load);
-    let name;
+    let name: string;
+
     try {
       let module = await CLIUtils.loadFromFile(filePath);
 
@@ -133,15 +148,37 @@ export class CliWrapper extends LoggedClass {
           `You should export the instantiated Commands class as default.`
         );
 
-      this.modules[name] = module;
+      const moduleRoot = this.findModuleRoot(path.dirname(filePath));
+      const packageName = this.getPackageNameFromRoot(moduleRoot);
+      if (
+        packageName === CLI_PACKAGE_NAME &&
+        this.includedModuleNames.has(name)
+      ) {
+        log.verbose(
+          `skipping included module ${name} at ${filePath} (already loaded)`
+        );
+        return undefined;
+      }
+
+      this.registerModule(name, module, moduleRoot, log);
     } catch (e: unknown) {
       throw new Error(
         `failed to load module under ${filePath}: ${e instanceof Error ? e.message : e}`
       );
     }
 
+    return name;
+  }
+
+  private registerModule(
+    name: string,
+    module: Command,
+    moduleRoot: string,
+    log: Logger
+  ) {
+    this.modules[name] = module;
+
     try {
-      const moduleRoot = this.findModuleRoot(path.dirname(filePath));
       const records = readSlogans(log, moduleRoot);
       const strings = this.extractSloganStrings(records);
       if (strings.length) {
@@ -150,8 +187,6 @@ export class CliWrapper extends LoggedClass {
     } catch (e: unknown) {
       console.error(`Failed to load slogans for ${name}: ${e}`);
     }
-
-    return name;
   }
 
   /**
@@ -185,17 +220,90 @@ export class CliWrapper extends LoggedClass {
    */
   private async boot() {
     const log = this.log.for(this.boot);
-    const basePath = path.resolve(this.rootPath, this.basePath);
+    this.loadIncludedModules();
+
+    const basePath = this.getHostPath();
+    const seen = new Set<string>();
+    await this.loadModulesFromPath(basePath, seen, log);
+
+    const scopePaths = this.getScopePackageRoots();
+    for (const scopePath of scopePaths) {
+      await this.loadModulesFromPath(scopePath, seen, log);
+    }
+
+    log.debug(
+      `loaded modules:\n${Object.keys(this.modules)
+        .map((k) => `- ${k}`)
+        .join("\n")}`
+    );
+  }
+
+  private loadIncludedModules() {
+    const log = this.log.for(this.loadIncludedModules);
+    for (const factory of INCLUDED_MODULE_FACTORIES) {
+      try {
+        const moduleName = factory.name;
+        if (!moduleName || this.includedModuleNames.has(moduleName)) {
+          continue;
+        }
+
+        const command = factory();
+        if (!this.isCommandInstance(command)) {
+          continue;
+        }
+
+        this.includedModuleNames.add(moduleName);
+        this.registerModule(moduleName, command, this.rootPath, log);
+
+        if (
+          !this.command.commands.some((cmd) => cmd.name() === moduleName)
+        ) {
+          this.command.addCommand(command);
+        }
+      } catch (error: unknown) {
+        console.error(
+          `failed to load included module ${factory.name}: ${
+            error instanceof Error ? error.message : error
+          }`
+        );
+      }
+    }
+  }
+
+  private async loadModulesFromPath(
+    basePath: string,
+    seen: Set<string>,
+    log: Logger
+  ) {
+    if (!fs.existsSync(basePath)) {
+      return;
+    }
+
+    try {
+      if (!fs.statSync(basePath).isDirectory()) {
+        return;
+      }
+    } catch {
+      return;
+    }
+
     const modules = this.crawl(basePath, this.crawlLevels);
+
     for (const module of modules) {
-      if (module.includes("@decaf-ts/cli")) {
+      const resolved = path.resolve(module);
+      if (seen.has(resolved)) {
         continue;
       }
-      let name: string;
+      seen.add(resolved);
+
+      let name: string | undefined;
       try {
-        name = await this.load(module);
+        name = await this.load(resolved);
       } catch (e: unknown) {
         console.error(e);
+        continue;
+      }
+      if (!name) {
         continue;
       }
 
@@ -206,17 +314,58 @@ export class CliWrapper extends LoggedClass {
         log.verbose(`Command ${name} already registered; skipping duplicate`);
         continue;
       }
+
       try {
         this.command.addCommand(this.modules[name]);
       } catch (e: unknown) {
         console.error(e);
       }
     }
-    log.debug(
-      `loaded modules:\n${Object.keys(this.modules)
-        .map((k) => `- ${k}`)
-        .join("\n")}`
-    );
+  }
+
+  private getScopePackageRoots(): string[] {
+    const scopeRoots = new Set<string>();
+    const candidates = [this.rootPath];
+    const hostPath = this.getHostPath();
+    if (hostPath !== this.rootPath) {
+      candidates.push(hostPath);
+    }
+
+    for (const candidate of candidates) {
+      const scopeDir = path.join(candidate, "node_modules", "@decaf-ts");
+      try {
+        if (!fs.existsSync(scopeDir) || !fs.statSync(scopeDir).isDirectory()) {
+          continue;
+        }
+
+        const entries = fs.readdirSync(scopeDir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+          scopeRoots.add(path.join(scopeDir, entry.name));
+        }
+      } catch {
+        // ignore inaccessible nodes
+      }
+    }
+
+    return Array.from(scopeRoots);
+  }
+
+  private getHostPath(): string {
+    return path.resolve(this.rootPath, this.basePath);
+  }
+
+  private getPackageNameFromRoot(root: string): string | undefined {
+    try {
+      const pkgPath = path.join(root, "package.json");
+      if (!fs.existsSync(pkgPath)) {
+        return undefined;
+      }
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+      return typeof pkg.name === "string" ? pkg.name : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   /**
@@ -230,11 +379,13 @@ export class CliWrapper extends LoggedClass {
    * @private
    */
   private crawl(basePath: string, levels: number = 2) {
-    if (levels <= 0) return [];
+    if (levels < 0) return [];
     return fs.readdirSync(basePath).reduce((accum: string[], file) => {
       file = path.join(basePath, file);
       if (fs.statSync(file).isDirectory()) {
-        accum.push(...this.crawl(file, levels - 1));
+        if (levels > 0) {
+          accum.push(...this.crawl(file, levels - 1));
+        }
       } else if (file.match(new RegExp(`${CLI_FILE_NAME}\\.[cm]js$`, "gm"))) {
         accum.push(file);
       }

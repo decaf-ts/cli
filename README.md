@@ -35,7 +35,7 @@ A modular command-line interface framework for Decaf-ts that dynamically discove
 
 Documentation available [here](https://decaf-ts.github.io/cli/)
 
-Minimal size: 7.7 KB kb gzipped
+Minimal size: 8 KB kb gzipped
 
 
 ### Description

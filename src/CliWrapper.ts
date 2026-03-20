@@ -5,6 +5,7 @@ import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
 import {
   LoggedClass,
+  LogLevel,
   LogParameterDescriptor,
   Logging,
   logParameterRegistry,
@@ -18,6 +19,10 @@ import releaseModule from "./release-module/cli-module";
 import utilsModule from "./utils-module/cli-module";
 
 const MIN_BANNER_WIDTH = 92;
+const DEFAULT_LOG_LEVEL = LogLevel.info;
+const LOG_FORMAT = DecafCLieEnvironment.format.includes("{pId}")
+  ? DecafCLieEnvironment.format
+  : `{pId}|${DecafCLieEnvironment.format}`;
 const CLI_PACKAGE_NAME = "@decaf-ts/cli";
 
 type CliModuleFactory = () => Command;
@@ -49,9 +54,8 @@ try {
   }
 }
 Logging.setConfig({
-  format: DecafCLieEnvironment.format.includes("{pId}")
-    ? DecafCLieEnvironment.format
-    : `{pId}|${DecafCLieEnvironment.format}`,
+  level: DEFAULT_LOG_LEVEL,
+  format: LOG_FORMAT,
 });
 
 /**
@@ -80,6 +84,7 @@ export class CliWrapper extends LoggedClass {
   private moduleSlogans: Record<string, string[]> = {};
   private globalSlogans: string[] = [];
   private bannerAnimation?: () => void;
+  private readonly logLevelAttached = new WeakSet<Command>();
 
   private static env = DecafCLieEnvironment;
 
@@ -147,6 +152,8 @@ export class CliWrapper extends LoggedClass {
         throw new Error(
           `You should export the instantiated Commands class as default.`
         );
+
+      this.ensureLogLevelSupport(module);
 
       const moduleRoot = this.findModuleRoot(path.dirname(filePath));
       const packageName = this.getPackageNameFromRoot(moduleRoot);
@@ -220,6 +227,7 @@ export class CliWrapper extends LoggedClass {
    */
   private async boot() {
     const log = this.log.for(this.boot);
+    this.ensureLogLevelSupport(this.command);
     this.loadIncludedModules();
 
     const basePath = this.getHostPath();
@@ -251,6 +259,7 @@ export class CliWrapper extends LoggedClass {
         if (!this.isCommandInstance(command)) {
           continue;
         }
+        this.ensureLogLevelSupport(command);
 
         this.includedModuleNames.add(moduleName);
         this.registerModule(moduleName, command, this.rootPath, log);
@@ -366,6 +375,55 @@ export class CliWrapper extends LoggedClass {
     } catch {
       return undefined;
     }
+  }
+
+  private ensureLogLevelSupport(command: Command) {
+    if (this.logLevelAttached.has(command)) {
+      return;
+    }
+
+    this.logLevelAttached.add(command);
+
+    const hasLogLevelOption = command.options.some(
+      (option) => option.long === "--logLevel"
+    );
+    if (!hasLogLevelOption) {
+      command.option(
+        "--logLevel <level>",
+        "Override the CLI log level (error, warn, info, verbose, debug, trace, silly)",
+        DEFAULT_LOG_LEVEL
+      );
+    }
+
+    command.hook("preAction", (_, actionCommand) => {
+      const opts = actionCommand.opts() as Record<string, unknown>;
+      this.updateLogLevel(opts.logLevel as string | undefined);
+    });
+
+    for (const subCommand of command.commands) {
+      this.ensureLogLevelSupport(subCommand);
+    }
+  }
+
+  private updateLogLevel(level?: string) {
+    const resolvedLevel = this.resolveLogLevel(level);
+    Logging.setConfig({
+      level: resolvedLevel,
+      format: LOG_FORMAT,
+    });
+  }
+
+  private resolveLogLevel(level?: string): LogLevel {
+    if (!level) return DEFAULT_LOG_LEVEL;
+    const normalized = level.toLowerCase();
+    const options = Object.values(LogLevel) as string[];
+    if (options.includes(normalized)) {
+      return normalized as LogLevel;
+    }
+    console.warn(
+      `Unknown log level "${level}" provided; falling back to ${DEFAULT_LOG_LEVEL}`
+    );
+    return DEFAULT_LOG_LEVEL;
   }
 
   /**

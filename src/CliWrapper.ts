@@ -3,12 +3,43 @@ import fs from "fs";
 import path from "path";
 import { CLI_FILE_NAME } from "./constants";
 import { CLIUtils } from "./utils";
-import { LoggedClass } from "@decaf-ts/logging";
+import {
+  LoggedClass,
+  LogParameterDescriptor,
+  Logging,
+  logParameterRegistry,
+} from "@decaf-ts/logging";
 import { banners, colorPalettes } from "./banners";
 import { readSlogans } from "./slogans";
 import { DecafCLieEnvironment } from "./environment";
 
 const MIN_BANNER_WIDTH = 92;
+
+const pIdDescriptor: LogParameterDescriptor = {
+  key: "pId",
+  render(payload) {
+    if (payload.config.logLevel === false) return undefined;
+    return process.pid.toString();
+  },
+  style(rendered, payload) {
+    return payload.applyTheme(rendered, "context");
+  },
+};
+
+try {
+  Logging.register(pIdDescriptor);
+} catch {
+  try {
+    logParameterRegistry.register(pIdDescriptor);
+  } catch {
+    // swallow: custom descriptor is a cosmetic enhancement
+  }
+}
+Logging.setConfig({
+  format: DecafCLieEnvironment.format.includes("{pId}")
+    ? DecafCLieEnvironment.format
+    : `{pId}|${DecafCLieEnvironment.format}`,
+});
 
 /**
  * @description Utility class to handle CLI functionality from all Decaf modules
@@ -168,16 +199,18 @@ export class CliWrapper extends LoggedClass {
         continue;
       }
 
-      if (
-        !this.command.commands.find(
-          (c) => (c as unknown as Record<string, string>)["_name"] === name
-        )
-      )
-        try {
-          this.command.addCommand(this.modules[name]);
-        } catch (e: unknown) {
-          console.error(e);
-        }
+      const alreadyRegistered = this.command.commands.some(
+        (cmd) => cmd.name() === name
+      );
+      if (alreadyRegistered) {
+        log.verbose(`Command ${name} already registered; skipping duplicate`);
+        continue;
+      }
+      try {
+        this.command.addCommand(this.modules[name]);
+      } catch (e: unknown) {
+        console.error(e);
+      }
     }
     log.debug(
       `loaded modules:\n${Object.keys(this.modules)
@@ -257,7 +290,10 @@ export class CliWrapper extends LoggedClass {
     return [...this.globalSlogans, ...modules];
   }
 
-  private buildBalancedSloganPool(primary: string[], secondary: string[]): string[] {
+  private buildBalancedSloganPool(
+    primary: string[],
+    secondary: string[]
+  ): string[] {
     const targetLength = Math.max(primary.length, secondary.length);
     const primaryBucket = this.repeatToLength(primary, targetLength);
     const secondaryBucket = this.repeatToLength(secondary, targetLength);
@@ -327,7 +363,10 @@ export class CliWrapper extends LoggedClass {
       for (const pkg of pkgs) {
         const candidate = path.join(scopeDir, pkg);
         try {
-          if (!fs.existsSync(candidate) || !fs.statSync(candidate).isDirectory()) {
+          if (
+            !fs.existsSync(candidate) ||
+            !fs.statSync(candidate).isDirectory()
+          ) {
             continue;
           }
           this.collectSlogansFromPath(log, candidate, accumulator);
@@ -383,11 +422,7 @@ export class CliWrapper extends LoggedClass {
       0
     );
     const messageWidth = Math.max(0, message.length);
-    const targetWidth = Math.max(
-      MIN_BANNER_WIDTH,
-      maxLineWidth,
-      messageWidth
-    );
+    const targetWidth = Math.max(MIN_BANNER_WIDTH, maxLineWidth, messageWidth);
     const banner = rawLines.map((line) => line.padEnd(targetWidth));
     banner.push(message.padStart(targetWidth));
 

@@ -29,17 +29,9 @@ describe("decaf-ts cli", () => {
     } catch {
       // ignore if already restored
     }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      writeMock &&
-        (writeMock as any).mockRestore &&
-        (writeMock as any).mockRestore();
-    } catch {
-      // ignore
-    }
   });
 
-  beforeAll(() => {
+  beforeEach(() => {
     cli = new CliWrapper("./");
     writeMock = jest.spyOn(
       (cli["command"] as any)["_outputConfiguration"] as {
@@ -53,8 +45,9 @@ describe("decaf-ts cli", () => {
   });
 
   afterEach(() => {
-    writeMock.mockReset();
-    writeMock.mockClear();
+    if (writeMock) {
+      writeMock.mockRestore();
+    }
     logMock.mockReset();
     logMock.mockClear();
   });
@@ -68,13 +61,14 @@ describe("decaf-ts cli", () => {
         "Runs cli related commands\n" +
         "\n" +
         "Options:\n" +
-        "  -V, --version   output the version number\n" +
-        "  -h, --help      display help for command\n" +
+        "  -V, --version    output the version number\n" +
+        "  -h, --help       display help for command\n" +
         "\n" +
         "Commands:\n" +
-        "  demo            Demo commands\n" +
-        "  utils           utilitarian cli commands for the decaf-ts framework\n" +
-        "  help [command]  display help for command\n"
+        "  build [options]  Run decaf build scripts\n" +
+        "  release          Automate release chain propagation and workflow dispatches\n" +
+        "  utils            utilitarian cli commands for the decaf-ts framework\n" +
+        "  help [command]   display help for command\n"
     );
   });
 
@@ -84,13 +78,13 @@ describe("decaf-ts cli", () => {
   //   expect(writeMock).toHaveBeenCalledWith("");
   // });
 
-  it("Runs a command from a registered module", async () => {
-    await cli.run(["node", "cli", "demo", "command", "entry"]);
-    const calls = logMock.mock.calls.map((c) => String(c[0]));
-    expect(
-      calls.some((s) =>
-        s.includes("executed demo command with type variable: entry")
-      )
-    ).toBe(true);
+  it("Registers the known modules", async () => {
+    await cli.run(["node", "cli", "-h"]);
+    const registered = (cli["command"] as any).commands.map((cmd: any) =>
+      cmd.name()
+    );
+    expect(registered).toEqual(
+      expect.arrayContaining(["build", "release", "utils"])
+    );
   });
 });

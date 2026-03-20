@@ -40,7 +40,9 @@ const libraries = new Command()
 
 const environmentExport = new Command()
   .name("environment-export")
-  .description("outputs currently enforced environment")
+  .description(
+    "outputs currently enforced environment along with it's description"
+  )
   .option("--format [String]", "additional output formats (json, raw)")
   .action(async (options: any) => {
     const pkg = JSON.parse(
@@ -89,5 +91,6 @@ export default function utils(): Command {
     .description("utilitarian cli commands for the decaf-ts framework");
 
   utilsCmd.addCommand(libraries);
+  utilsCmd.addCommand(environmentExport);
   return utilsCmd;
 }

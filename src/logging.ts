@@ -8,8 +8,6 @@ export function getCmdLogger(cmd: Command) {
     inheritance.push(parent);
     parent = parent.parent;
   }
-  if (!parent)
-    throw new Error("Outshot the root parent. should not be possible");
   const log = inheritance.reverse().reduce((accum: Logger, el) => {
     return accum.for(el.name);
   }, Logging.get());

@@ -83,6 +83,7 @@
     "@types/jest": "^30.0.0"
   },
   "dependencies": {
+    "@decaf-ts/logging": "^0.11.3",
     "commander": "^13.1.0"
   },
   "peerDependencies": {

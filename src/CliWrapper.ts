@@ -8,7 +8,6 @@ import {
   LogLevel,
   LogParameterDescriptor,
   Logging,
-  logParameterRegistry,
   Logger,
 } from "@decaf-ts/logging";
 import { banners, colorPalettes } from "./banners";
@@ -30,10 +29,10 @@ const basePatternCandidate =
   typeof DecafCLieEnvironment.pattern === "string" &&
   DecafCLieEnvironment.pattern.includes("{")
     ? DecafCLieEnvironment.pattern
-    : Logging.getConfig().pattern ?? DEFAULT_PATTERN;
+    : (Logging.getConfig().pattern ?? DEFAULT_PATTERN);
 const PATTERN_WITH_PID = basePatternCandidate.includes("{pId}")
   ? basePatternCandidate
-  : `{pId}|${basePatternCandidate}`;
+  : `${basePatternCandidate}{pId}`;
 
 const applyLoggingConfig = (level: LogLevel) => {
   Logging.setConfig({
@@ -56,7 +55,7 @@ const pIdDescriptor: LogParameterDescriptor = {
   key: "pId",
   render(payload) {
     if (payload.config.logLevel === false) return undefined;
-    return process.pid.toString();
+    return `, pid: ${process.pid.toString()}`;
   },
   style(rendered, payload) {
     return payload.applyTheme(rendered, "context");
@@ -65,12 +64,8 @@ const pIdDescriptor: LogParameterDescriptor = {
 
 try {
   Logging.register(pIdDescriptor);
-} catch {
-  try {
-    logParameterRegistry.register(pIdDescriptor);
-  } catch {
-    // swallow: custom descriptor is a cosmetic enhancement
-  }
+} catch (e: unknown) {
+  throw new Error(`Failed to register process ID logging parameter: ${e}`);
 }
 applyLoggingConfig(DEFAULT_LOG_LEVEL);
 
@@ -283,9 +278,7 @@ export class CliWrapper extends LoggedClass {
         this.includedModuleNames.add(moduleName);
         this.registerModule(moduleName, command, this.rootPath, log);
 
-        if (
-          !this.command.commands.some((cmd) => cmd.name() === moduleName)
-        ) {
+        if (!this.command.commands.some((cmd) => cmd.name() === moduleName)) {
           this.command.addCommand(command);
         }
       } catch (error: unknown) {

@@ -14,6 +14,7 @@ const cliModuleRoot =
 export const DefaultCliEnvironment: DecafCliEnvironment = {
   banner: true,
   cliModuleRoot,
+  style: true,
 } as DecafCliEnvironment;
 
 export const DecafCLieEnvironment = LoggedEnvironment.accumulate(

@@ -20,14 +20,20 @@ import utilsModule from "./utils-module/cli-module";
 
 const MIN_BANNER_WIDTH = 92;
 const DEFAULT_LOG_LEVEL = LogLevel.info;
-const EFFECTIVE_FORMAT = DecafCLieEnvironment.format;
-const BASE_PATTERN =
-  typeof DecafCLieEnvironment.pattern === "string"
+const DEFAULT_PATTERN =
+  "{level} [{timestamp}] {app} {context} {separator} {message} {stack}";
+const EFFECTIVE_FORMAT =
+  typeof DecafCLieEnvironment.format === "string"
+    ? DecafCLieEnvironment.format
+    : Logging.getConfig().format;
+const basePatternCandidate =
+  typeof DecafCLieEnvironment.pattern === "string" &&
+  DecafCLieEnvironment.pattern.includes("{")
     ? DecafCLieEnvironment.pattern
-    : Logging.getConfig().pattern ?? "{message}";
-const PATTERN_WITH_PID = BASE_PATTERN.includes("{pId}")
-  ? BASE_PATTERN
-  : `{pId}|${BASE_PATTERN}`;
+    : Logging.getConfig().pattern ?? DEFAULT_PATTERN;
+const PATTERN_WITH_PID = basePatternCandidate.includes("{pId}")
+  ? basePatternCandidate
+  : `{pId}|${basePatternCandidate}`;
 
 const applyLoggingConfig = (level: LogLevel) => {
   Logging.setConfig({
@@ -93,8 +99,8 @@ export class CliWrapper extends LoggedClass {
 
   private moduleSlogans: Record<string, string[]> = {};
   private globalSlogans: string[] = [];
-  private bannerAnimation?: () => void;
   private readonly logLevelAttached = new WeakSet<Command>();
+  private bannerPrinted = false;
 
   private static env = DecafCLieEnvironment;
 
@@ -171,9 +177,6 @@ export class CliWrapper extends LoggedClass {
         packageName === CLI_PACKAGE_NAME &&
         this.includedModuleNames.has(name)
       ) {
-        log.verbose(
-          `skipping included module ${name} at ${filePath} (already loaded)`
-        );
         return undefined;
       }
 
@@ -248,6 +251,11 @@ export class CliWrapper extends LoggedClass {
     const scopePaths = this.getScopePackageRoots();
     for (const scopePath of scopePaths) {
       await this.loadModulesFromPath(scopePath, seen, log);
+    }
+
+    const siblingPackageRoots = this.getSiblingPackageRoots();
+    for (const siblingRoot of siblingPackageRoots) {
+      await this.loadModulesFromPath(siblingRoot, seen, log);
     }
 
     log.debug(
@@ -369,6 +377,72 @@ export class CliWrapper extends LoggedClass {
     }
 
     return Array.from(scopeRoots);
+  }
+
+  private findEnclosingNodeModules(startPath: string): string | undefined {
+    let current = startPath;
+    const root = path.parse(startPath).root;
+    while (current && current !== root) {
+      if (path.basename(current) === "node_modules") {
+        return current;
+      }
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+    if (path.basename(root) === "node_modules") {
+      return root;
+    }
+    return undefined;
+  }
+
+  private getSiblingPackageRoots(): string[] {
+    const nodeModulesRoot = this.findEnclosingNodeModules(this.rootPath);
+    if (!nodeModulesRoot) {
+      return [];
+    }
+
+    const siblingRoots = new Set<string>();
+
+    try {
+      const entries = fs.readdirSync(nodeModulesRoot, {
+        withFileTypes: true,
+      });
+
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name.startsWith(".")) {
+          continue;
+        }
+
+        const entryPath = path.join(nodeModulesRoot, entry.name);
+
+        if (entry.name.startsWith("@")) {
+          try {
+            const scopedEntries = fs.readdirSync(entryPath, {
+              withFileTypes: true,
+            });
+            for (const scopedEntry of scopedEntries) {
+              if (!scopedEntry.isDirectory()) continue;
+              const scopedPath = path.join(entryPath, scopedEntry.name);
+              if (scopedPath === this.rootPath) continue;
+              siblingRoots.add(scopedPath);
+            }
+          } catch {
+            continue;
+          }
+          continue;
+        }
+
+        if (entryPath === this.rootPath) {
+          continue;
+        }
+        siblingRoots.add(entryPath);
+      }
+    } catch {
+      // Ignore node_modules access problems
+    }
+
+    return Array.from(siblingRoots);
   }
 
   private getHostPath(): string {
@@ -545,6 +619,8 @@ export class CliWrapper extends LoggedClass {
       this.collectSlogansFromScope(log, candidate, gathered);
     }
 
+    this.collectSlogansFromSiblingPackages(log, gathered);
+
     this.globalSlogans = gathered;
   }
 
@@ -567,7 +643,7 @@ export class CliWrapper extends LoggedClass {
   }
 
   private collectSlogansFromScope(
-    log: any,
+    log: Logger,
     basePath: string,
     accumulator: string[]
   ) {
@@ -596,6 +672,16 @@ export class CliWrapper extends LoggedClass {
     }
   }
 
+  private collectSlogansFromSiblingPackages(
+    log: Logger,
+    accumulator: string[]
+  ) {
+    const siblings = this.getSiblingPackageRoots();
+    for (const sibling of siblings) {
+      this.collectSlogansFromPath(log, sibling, accumulator);
+    }
+  }
+
   private extractSloganStrings(records?: { Slogan: string }[]): string[] {
     if (!records || !records.length) return [];
     return records
@@ -615,6 +701,11 @@ export class CliWrapper extends LoggedClass {
   }
 
   protected printBanner(args?: string[]) {
+    if (this.bannerPrinted) {
+      return () => {};
+    }
+    this.bannerPrinted = true;
+
     let message: string;
     try {
       const priorityModule = this.getPriorityModule(args);
@@ -643,12 +734,14 @@ export class CliWrapper extends LoggedClass {
     const banner = rawLines.map((line) => line.padEnd(targetWidth));
     banner.push(message.padStart(targetWidth));
 
-    const reservedLines = "\n".repeat(Math.max(0, banner.length));
-    process.stdout.write(reservedLines);
+    const reset = "\x1b[0m";
+    const paletteLength = Math.max(1, palette.length);
+    for (let index = 0; index < banner.length; index++) {
+      const color = palette[index % paletteLength] || "";
+      process.stdout.write(`${color}${banner[index]}${reset}\n`);
+    }
 
-    const stop = this.animateBanner(banner, palette);
-    this.bannerAnimation = stop;
-    return stop;
+    return () => {};
   }
 
   private getPriorityModule(args?: string[]): string | undefined {
@@ -664,71 +757,6 @@ export class CliWrapper extends LoggedClass {
       return trimmed;
     }
     return undefined;
-  }
-
-  private stopBannerAnimation() {
-    if (this.bannerAnimation) {
-      this.bannerAnimation();
-      this.bannerAnimation = undefined;
-    }
-  }
-
-  private animateBanner(lines: string[], palette: string[]) {
-    if (!lines.length) {
-      return () => {};
-    }
-
-    this.stopBannerAnimation();
-
-    const frameInterval = 150;
-    const duration = 5000;
-    const totalFrames = Math.max(1, Math.ceil(duration / frameInterval));
-    let framesRendered = 0;
-    let stopped = false;
-    let timer: NodeJS.Timeout | undefined;
-
-    const paletteLength = Math.max(1, palette.length);
-    const colorOffsets = lines.map((_, index) => index % paletteLength);
-    const reset = "\x1b[0m";
-    const height = lines.length;
-    const moveUp = `\u001b[${height}A`;
-
-    const stop = () => {
-      if (stopped) return;
-      stopped = true;
-      if (timer) {
-        clearInterval(timer);
-        timer = undefined;
-      }
-    };
-
-    const renderFrame = () => {
-      const offset = framesRendered % paletteLength;
-      const colored = lines.map((line, index) => {
-        const colorIndex = (colorOffsets[index] + offset) % paletteLength;
-        const color = palette[colorIndex] || "";
-        return `${color}${line}${reset}`;
-      });
-
-      process.stdout.write(moveUp);
-      for (const line of colored) {
-        process.stdout.write("\u001b[2K");
-        process.stdout.write(`${line}\n`);
-      }
-
-      framesRendered++;
-    };
-
-    renderFrame();
-    timer = setInterval(() => {
-      if (framesRendered >= totalFrames) {
-        stop();
-        return;
-      }
-      renderFrame();
-    }, frameInterval);
-
-    return stop;
   }
 
   /**
@@ -753,14 +781,15 @@ export class CliWrapper extends LoggedClass {
    */
   async run(args: string[] = process.argv) {
     await this.boot();
-    const stopAnimation = DecafCLieEnvironment.banner
-      ? this.printBanner(args)
-      : undefined;
+    let stopAnimation: (() => void) | undefined;
+    if (DecafCLieEnvironment.banner) {
+      this.bannerPrinted = false;
+      stopAnimation = this.printBanner(args);
+    }
     try {
       return await this.command.parseAsync(args);
     } finally {
       if (stopAnimation) stopAnimation();
-      this.bannerAnimation = undefined;
     }
   }
 

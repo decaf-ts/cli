@@ -724,7 +724,7 @@ export class CliWrapper extends LoggedClass {
 
     const rawLines = bannerTemplate
       .split("\n")
-      .filter((line) => line.length > 0);
+      .filter((line) => line.trim().length > 0);
     const maxLineWidth = rawLines.reduce<number>(
       (max, line) => Math.max(max, line.length),
       0

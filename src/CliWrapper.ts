@@ -104,7 +104,7 @@ export class CliWrapper extends LoggedClass {
     private crawlLevels = 4
   ) {
     super();
-    this.rootPath = path.resolve(__dirname, "..");
+    this.rootPath = this.findModuleRoot(path.resolve(__dirname, ".."));
   }
 
   /**

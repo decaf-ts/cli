@@ -25,7 +25,7 @@ export default function buildModule(): Command {
     .option("--version", "Show build-scripts version")
     .option("--dev", "Run the development build pipeline")
     .option("--prod", "Run the production build pipeline")
-    .option("--build-mode <mode>", "Select build mode (build|bundle|all)")
+    .option("--build-mode <mode>", "Select build mode (build|bundle|all)", "all")
     .option("--includes <list>", "Comma separated bundle includes list")
     .option("--externals <list>", "Comma separated externals list")
     .option("--docs", "Generate documentation")

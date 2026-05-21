@@ -5,7 +5,7 @@ import { getCmdLogger } from "../logging";
 export type OptionSpec = {
   name: string;
   flag: string;
-  type: "boolean" | "string";
+  type: "boolean" | "string" | "string[]";
   allowFalse?: boolean;
 };
 
@@ -25,8 +25,17 @@ export function buildValueMap(
       if (value === true || (spec.allowFalse && value === false)) {
         acc[spec.name] = value;
       }
-    } else if (spec.type === "string" && typeof value === "string" && value.length > 0) {
+    } else if (
+      spec.type === "string" &&
+      typeof value === "string" &&
+      value.length > 0
+    ) {
       acc[spec.name] = value;
+    } else if (spec.type === "string[]" && Array.isArray(value)) {
+      const normalized = value
+        .map((item) => `${item}`.trim())
+        .filter(Boolean);
+      if (normalized.length > 0) acc[spec.name] = normalized;
     }
     return acc;
   }, {} as Record<string, unknown>);

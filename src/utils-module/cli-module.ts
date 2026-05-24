@@ -110,6 +110,10 @@ const modulesCommand = new Command()
     "--base-path <path>",
     "Directory to read .gitmodules from (defaults to the current working directory)"
   )
+  .addHelpText(
+    "after",
+    "\nUse this to discover the module tree before running `run-all`, `npm-link`, or `npm-token`."
+  )
   .action(async function (this: Command) {
     const values = buildValueMap(this, MODULES_OPTION_SPECS);
     await runUtilsCommand(new ModulesCommand(), values, this);
@@ -147,7 +151,7 @@ const npmLinkCommand = new Command()
   )
   .addHelpText(
     "after",
-    "\nlink creates symlinks for decaf-ts dependencies, unlink removes those links and reinstalls, and any other operation is passed through to npm in each selected module."
+    "\n`link` creates symlinks for decaf-ts dependencies, `unlink` removes those links and reinstalls, and any other operation is passed through to npm in each selected module."
   )
   .action(async function (this: Command) {
     const values = buildValueMap(this, NPM_LINK_OPTION_SPECS);
@@ -173,6 +177,10 @@ const npmTokenCommand = new Command()
     "--token-files <files...>",
     "Token files to link into each selected module",
     [".token", ".npmtoken"]
+  )
+  .addHelpText(
+    "after",
+    "\nThis command creates symlinks back to the repository root token files for every discovered module."
   )
   .action(async function (this: Command) {
     const values = buildValueMap(this, NPM_TOKEN_OPTION_SPECS);
@@ -210,6 +218,10 @@ const runAllCommand = new Command()
     "Directory to read .gitmodules from (defaults to the current working directory)"
   )
   .option("--command <cmd>", "Shell command to execute in each module")
+  .addHelpText(
+    "after",
+    "\nThe command stops on the first failing module command."
+  )
   .action(async function (this: Command) {
     const values = buildValueMap(this, RUN_ALL_OPTION_SPECS);
     await runUtilsCommand(new RunAllCommand(), values, this);
@@ -227,6 +239,10 @@ const tagReleaseCommand = new Command()
   .option("--allow-from-branch", "Skip the master/main branch guard")
   .option("--tag <tag>", "Release tag to create")
   .option("--message <message>", "Release message to use")
+  .addHelpText(
+    "after",
+    "\nIf tag or message are omitted, the command prompts interactively. The command uses .token for git pushes and .npmtoken for npm publish unless overridden."
+  )
   .action(async function (this: Command) {
     const values = buildValueMap(this, TAG_RELEASE_OPTION_SPECS);
     await runUtilsCommand(new TagReleaseCommand(), values, this);

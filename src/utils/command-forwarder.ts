@@ -54,6 +54,10 @@ export async function runUtilsCommand(
   }
 
   log.debug(`Executing ${utilsCommand.constructor.name} command via decaf CLI bridge`);
+  if ((payload as Record<string, unknown>).help === true) {
+    console.log(invoker.helpInformation());
+    return;
+  }
   if ((payload as Record<string, unknown>).version === true) {
     console.log(UtilsVersion);
     return;

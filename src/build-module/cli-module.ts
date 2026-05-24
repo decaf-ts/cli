@@ -31,6 +31,10 @@ export default function buildModule(): Command {
     .option("--docs", "Generate documentation")
     .option("--commands", "Include CLI commands bundle")
     .option("--entry <path>", "Override entry file path")
+    .addHelpText(
+      "after",
+      "\nBuild mode defaults to `all`. Use `--dev` or `--prod` to select a pipeline, `--docs` to generate docs, and `--commands` to include the CLI command bundle."
+    )
     .action(async function (this: Command) {
       const values = buildValueMap(this, BUILD_OPTION_SPECS);
       await runUtilsCommand(new BuildScripts(), values, this);

@@ -75,6 +75,10 @@ export default function releaseModule(): Command {
       "--target-base <branch>",
       "Base branch to open downstream pull requests against"
     )
+    .addHelpText(
+      "after",
+      "\nThis command resolves missing meta, branch, and package values from git and environment variables when possible."
+    )
     .action(async function (this: Command) {
       const values = buildValueMap(this, RELEASE_CHAIN_SPECS);
       await runUtilsCommand(new ReleaseChainCommand(), values, this);
@@ -105,6 +109,10 @@ export default function releaseModule(): Command {
     .option(
       "--target-base <branch>",
       "Base branch to open downstream pull requests against"
+    )
+    .addHelpText(
+      "after",
+      "\nThis command dispatches the GitHub Actions workflow directly and falls back to git detection for missing meta or branch values."
     )
     .action(async function (this: Command) {
       const values = buildValueMap(this, RELEASE_DISPATCH_SPECS);

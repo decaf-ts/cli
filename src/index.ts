@@ -1,4 +1,5 @@
 export * from "./CliWrapper";
+export * from "./Command";
 export * from "./environment";
 /**
  * @description Decaf-ts' CLI module

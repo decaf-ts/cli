@@ -253,7 +253,7 @@ export class CliWrapper extends LoggedClass {
       await this.loadModulesFromPath(siblingRoot, seen, log);
     }
 
-    log.debug(
+    log.silly(
       `loaded modules:\n${Object.keys(this.modules)
         .map((k) => `- ${k}`)
         .join("\n")}`

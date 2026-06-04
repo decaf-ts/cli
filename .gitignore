@@ -21,3 +21,4 @@
 !/workdocs/reports/jest.coverage.config.cjs
 /node_modules
 !.gitkeep
+/coverage

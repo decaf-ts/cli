@@ -105,6 +105,8 @@ describe("CliWrapper", () => {
         configurable: true,
       });
 
+      const randomSpy = jest.spyOn(Math, "random");
+      randomSpy.mockReturnValue(0);
       const layout = (bannerCli as any)["selectBannerLayout"]();
       const write = jest
         .spyOn(process.stdout, "write")

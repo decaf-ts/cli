@@ -789,11 +789,7 @@ export class CliWrapper extends LoggedClass {
     );
 
     const candidateLayouts = fittingLayouts.length
-      ? fittingLayouts.filter(
-          (layout) =>
-            layout.width ===
-            Math.max(...fittingLayouts.map((candidate) => candidate.width))
-        )
+      ? fittingLayouts
       : BANNER_LAYOUTS.filter(
           (layout) =>
             layout.width ===

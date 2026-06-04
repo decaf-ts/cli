@@ -1,0 +1,379 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for lib/cjs/utils.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">lib/cjs</a> utils.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">17.64% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>3/17</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/8</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">20% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>3/15</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import path from "path";
+import fs from "fs";
+/**
+ * @description Utility class for CLI operations
+ * @summary A static utility class that provides methods for loading modules, retrieving package information, and initializing CLI commands
+ *
+ * @example
+ * // Initialize a Command object with package information
+ * const command = new Command();
+ * CLIUtils.initialize(command, './path/to/package');
+ *
+ * // Load a CLI module from a file
+ * const module = await CLIUtils.loadFromFile('./path/to/cli-module.js');
+ *
+ * @class CLIUtils
+ */
+export class CLIUtils {
+    /**
+     * @description Dynamically imports a module file
+     * @summary Loads a JavaScript file and returns it as a CliModule, handling both ESM and CommonJS formats
+     *
+     * @param {string} path The file path to the module to load
+     * @return {Promise&lt;CliModule&gt;} A promise that resolves to the loaded CliModule
+     */
+<span class="fstat-no" title="function not covered" >    static </span>async loadFromFile(path) {
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >            return CLIUtils.normalizeImport(import(path<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >));</span></span></span>
+        }
+        catch (e) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`Failed to load from ${path}: ${e instanceof Error ? e.message : e}`);</span>
+        }
+    }
+    /**
+     * @description Normalizes module imports to handle both ESM and CommonJS formats
+     * @summary Properly imports JavaScript files regardless of their module format by handling the ESM wrapper for CommonJS modules
+     *
+     * @template T The type of the imported module
+     * @param {Promise&lt;T&gt;} importPromise The promise returned by the dynamic import
+     * @return {Promise&lt;T&gt;} A promise that resolves to the normalized module
+     * @private
+     */
+<span class="fstat-no" title="function not covered" >    static </span>async normalizeImport(importPromise) {
+        // CommonJS's `module.exports` is wrapped as `default` in ESModule.
+<span class="cstat-no" title="statement not covered" >        return importPromise.then(<span class="fstat-no" title="function not covered" >(m</span>) =&gt; (<span class="cstat-no" title="statement not covered" >m.default || m)</span>);</span>
+    }
+    /**
+     * @description Initializes a Command object with package information
+     * @summary Sets up a Commander Command object with the package name, description, and version from the package.json file
+     *
+     * @param {Command} command The Command object to initialize
+     * @param {string} [basePath] The base path where the package.json file is located, defaults to the current working directory
+     * @return {void}
+     */
+<span class="fstat-no" title="function not covered" >    static </span>initialize(command, basePath) {
+        const name = <span class="cstat-no" title="statement not covered" >CLIUtils.packageName(basePath);</span>
+<span class="cstat-no" title="statement not covered" >        command</span>
+            .name("decaf")
+            .description(`Runs ${name} related commands`)
+            .version(CLIUtils.packageVersion(basePath));
+    }
+    /**
+     * @description Retrieves and parses the package.json file
+     * @summary Reads the package.json file from the specified path and parses it into a JavaScript object
+     *
+     * @param {string} basePath The base path where the package.json file is located
+     * @return {Record&lt;string, unknown&gt;} The parsed package.json content as an object
+     * @private
+     */
+<span class="fstat-no" title="function not covered" >    static </span>getPackage(basePath) {
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >            return JSON.parse(fs.readFileSync(path.join(basePath, "package.json"), "utf8"));</span>
+        }
+        catch (e) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`Unable to read version from ${basePath}: ${e}`);</span>
+        }
+    }
+    /**
+     * @description Returns the version from package.json
+     * @summary Retrieves the version field from the package.json file at the specified path
+     *
+     * @param {string} basePath The base path where the package.json file is located
+     * @return {string} The package version string
+     */
+<span class="fstat-no" title="function not covered" >    static </span>packageVersion(basePath) {
+<span class="cstat-no" title="statement not covered" >        return CLIUtils.getPackage(basePath)["version"];</span>
+    }
+    /**
+     * @description Returns the name from package.json
+     * @summary Retrieves the name field from the package.json file at the specified path and extracts the package name without the scope
+     *
+     * @param {string} basePath The base path where the package.json file is located
+     * @return {string} The package name without the scope (e.g., "cli" from "@decaf-ts/cli")
+     */
+<span class="fstat-no" title="function not covered" >    static </span>packageName(basePath) {
+        const name = <span class="cstat-no" title="statement not covered" >CLIUtils.getPackage(basePath)["name"].split("/");</span>
+<span class="cstat-no" title="statement not covered" >        return name[name.length - 1];</span>
+    }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidXRpbHMuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvdXRpbHMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTyxJQUFJLE1BQU0sTUFBTSxDQUFDO0FBQ3hCLE9BQU8sRUFBRSxNQUFNLElBQUksQ0FBQztBQUlwQjs7Ozs7Ozs7Ozs7OztHQWFHO0FBQ0gsTUFBTSxPQUFPLFFBQVE7SUFDbkI7Ozs7OztPQU1HO0lBQ0gsTUFBTSxDQUFDLEtBQUssQ0FBQyxZQUFZLENBQUMsSUFBWTtRQUNwQyxJQUFJLENBQUM7WUFDSCxPQUFPLFFBQVEsQ0FBQyxlQUFlLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUM7UUFDaEQsQ0FBQztRQUFDLE9BQU8sQ0FBVSxFQUFFLENBQUM7WUFDcEIsTUFBTSxJQUFJLEtBQUssQ0FDYix1QkFBdUIsSUFBSSxLQUFLLENBQUMsWUFBWSxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxPQUFPLENBQUMsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUNyRSxDQUFDO1FBQ0osQ0FBQztJQUNILENBQUM7SUFFRDs7Ozs7Ozs7T0FRRztJQUNILE1BQU0sQ0FBQyxLQUFLLENBQUMsZUFBZSxDQUFJLGFBQXlCO1FBQ3ZELG1FQUFtRTtRQUNuRSxPQUFPLGFBQWEsQ0FBQyxJQUFJLENBQ3ZCLENBQUMsQ0FBVSxFQUFFLEVBQUUsQ0FBQyxDQUFFLENBQW9CLENBQUMsT0FBTyxJQUFJLENBQUMsQ0FBTSxDQUMxRCxDQUFDO0lBQ0osQ0FBQztJQUVEOzs7Ozs7O09BT0c7SUFDSCxNQUFNLENBQUMsVUFBVSxDQUFDLE9BQWdCLEVBQUUsUUFBZ0I7UUFDbEQsTUFBTSxJQUFJLEdBQUcsUUFBUSxDQUFDLFdBQVcsQ0FBQyxRQUFRLENBQUMsQ0FBQztRQUM1QyxPQUFPO2FBQ0osSUFBSSxDQUFDLE9BQU8sQ0FBQzthQUNiLFdBQVcsQ0FBQyxRQUFRLElBQUksbUJBQW1CLENBQUM7YUFDNUMsT0FBTyxDQUFDLFFBQVEsQ0FBQyxjQUFjLENBQUMsUUFBUSxDQUFDLENBQUMsQ0FBQztJQUNoRCxDQUFDO0lBRUQ7Ozs7Ozs7T0FPRztJQUNLLE1BQU0sQ0FBQyxVQUFVLENBQUMsUUFBZ0I7UUFDeEMsSUFBSSxDQUFDO1lBQ0gsT0FBTyxJQUFJLENBQUMsS0FBSyxDQUNmLEVBQUUsQ0FBQyxZQUFZLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxRQUFRLEVBQUUsY0FBYyxDQUFDLEVBQUUsTUFBTSxDQUFDLENBQzdELENBQUM7UUFDSixDQUFDO1FBQUMsT0FBTyxDQUFVLEVBQUUsQ0FBQztZQUNwQixNQUFNLElBQUksS0FBSyxDQUFDLCtCQUErQixRQUFRLEtBQUssQ0FBQyxFQUFFLENBQUMsQ0FBQztRQUNuRSxDQUFDO0lBQ0gsQ0FBQztJQUVEOzs7Ozs7T0FNRztJQUNILE1BQU0sQ0FBQyxjQUFjLENBQUMsUUFBZ0I7UUFDcEMsT0FBTyxRQUFRLENBQUMsVUFBVSxDQUFDLFFBQVEsQ0FBQyxDQUFDLFNBQVMsQ0FBVyxDQUFDO0lBQzVELENBQUM7SUFFRDs7Ozs7O09BTUc7SUFDSCxNQUFNLENBQUMsV0FBVyxDQUFDLFFBQWdCO1FBQ2pDLE1BQU0sSUFBSSxHQUFJLFFBQVEsQ0FBQyxVQUFVLENBQUMsUUFBUSxDQUFDLENBQUMsTUFBTSxDQUFZLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDO1FBQzFFLE9BQU8sSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLEdBQUcsQ0FBQyxDQUFDLENBQUM7SUFDL0IsQ0FBQztDQUNGIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHBhdGggZnJvbSBcInBhdGhcIjtcbmltcG9ydCBmcyBmcm9tIFwiZnNcIjtcbmltcG9ydCB7IENvbW1hbmQgfSBmcm9tIFwiY29tbWFuZGVyXCI7XG5pbXBvcnQgeyBDbGlNb2R1bGUgfSBmcm9tIFwiLi90eXBlc1wiO1xuXG4vKipcbiAqIEBkZXNjcmlwdGlvbiBVdGlsaXR5IGNsYXNzIGZvciBDTEkgb3BlcmF0aW9uc1xuICogQHN1bW1hcnkgQSBzdGF0aWMgdXRpbGl0eSBjbGFzcyB0aGF0IHByb3ZpZGVzIG1ldGhvZHMgZm9yIGxvYWRpbmcgbW9kdWxlcywgcmV0cmlldmluZyBwYWNrYWdlIGluZm9ybWF0aW9uLCBhbmQgaW5pdGlhbGl6aW5nIENMSSBjb21tYW5kc1xuICpcbiAqIEBleGFtcGxlXG4gKiAvLyBJbml0aWFsaXplIGEgQ29tbWFuZCBvYmplY3Qgd2l0aCBwYWNrYWdlIGluZm9ybWF0aW9uXG4gKiBjb25zdCBjb21tYW5kID0gbmV3IENvbW1hbmQoKTtcbiAqIENMSVV0aWxzLmluaXRpYWxpemUoY29tbWFuZCwgJy4vcGF0aC90by9wYWNrYWdlJyk7XG4gKlxuICogLy8gTG9hZCBhIENMSSBtb2R1bGUgZnJvbSBhIGZpbGVcbiAqIGNvbnN0IG1vZHVsZSA9IGF3YWl0IENMSVV0aWxzLmxvYWRGcm9tRmlsZSgnLi9wYXRoL3RvL2NsaS1tb2R1bGUuanMnKTtcbiAqXG4gKiBAY2xhc3MgQ0xJVXRpbHNcbiAqL1xuZXhwb3J0IGNsYXNzIENMSVV0aWxzIHtcbiAgLyoqXG4gICAqIEBkZXNjcmlwdGlvbiBEeW5hbWljYWxseSBpbXBvcnRzIGEgbW9kdWxlIGZpbGVcbiAgICogQHN1bW1hcnkgTG9hZHMgYSBKYXZhU2NyaXB0IGZpbGUgYW5kIHJldHVybnMgaXQgYXMgYSBDbGlNb2R1bGUsIGhhbmRsaW5nIGJvdGggRVNNIGFuZCBDb21tb25KUyBmb3JtYXRzXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBwYXRoIFRoZSBmaWxlIHBhdGggdG8gdGhlIG1vZHVsZSB0byBsb2FkXG4gICAqIEByZXR1cm4ge1Byb21pc2U8Q2xpTW9kdWxlPn0gQSBwcm9taXNlIHRoYXQgcmVzb2x2ZXMgdG8gdGhlIGxvYWRlZCBDbGlNb2R1bGVcbiAgICovXG4gIHN0YXRpYyBhc3luYyBsb2FkRnJvbUZpbGUocGF0aDogc3RyaW5nKTogUHJvbWlzZTxDbGlNb2R1bGU+IHtcbiAgICB0cnkge1xuICAgICAgcmV0dXJuIENMSVV0aWxzLm5vcm1hbGl6ZUltcG9ydChpbXBvcnQocGF0aCkpO1xuICAgIH0gY2F0Y2ggKGU6IHVua25vd24pIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcihcbiAgICAgICAgYEZhaWxlZCB0byBsb2FkIGZyb20gJHtwYXRofTogJHtlIGluc3RhbmNlb2YgRXJyb3IgPyBlLm1lc3NhZ2UgOiBlfWBcbiAgICAgICk7XG4gICAgfVxuICB9XG5cbiAgLyoqXG4gICAqIEBkZXNjcmlwdGlvbiBOb3JtYWxpemVzIG1vZHVsZSBpbXBvcnRzIHRvIGhhbmRsZSBib3RoIEVTTSBhbmQgQ29tbW9uSlMgZm9ybWF0c1xuICAgKiBAc3VtbWFyeSBQcm9wZXJseSBpbXBvcnRzIEphdmFTY3JpcHQgZmlsZXMgcmVnYXJkbGVzcyBvZiB0aGVpciBtb2R1bGUgZm9ybWF0IGJ5IGhhbmRsaW5nIHRoZSBFU00gd3JhcHBlciBmb3IgQ29tbW9uSlMgbW9kdWxlc1xuICAgKlxuICAgKiBAdGVtcGxhdGUgVCBUaGUgdHlwZSBvZiB0aGUgaW1wb3J0ZWQgbW9kdWxlXG4gICAqIEBwYXJhbSB7UHJvbWlzZTxUPn0gaW1wb3J0UHJvbWlzZSBUaGUgcHJvbWlzZSByZXR1cm5lZCBieSB0aGUgZHluYW1pYyBpbXBvcnRcbiAgICogQHJldHVybiB7UHJvbWlzZTxUPn0gQSBwcm9taXNlIHRoYXQgcmVzb2x2ZXMgdG8gdGhlIG5vcm1hbGl6ZWQgbW9kdWxlXG4gICAqIEBwcml2YXRlXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgbm9ybWFsaXplSW1wb3J0PFQ+KGltcG9ydFByb21pc2U6IFByb21pc2U8VD4pOiBQcm9taXNlPFQ+IHtcbiAgICAvLyBDb21tb25KUydzIGBtb2R1bGUuZXhwb3J0c2AgaXMgd3JhcHBlZCBhcyBgZGVmYXVsdGAgaW4gRVNNb2R1bGUuXG4gICAgcmV0dXJuIGltcG9ydFByb21pc2UudGhlbihcbiAgICAgIChtOiB1bmtub3duKSA9PiAoKG0gYXMgeyBkZWZhdWx0OiBUIH0pLmRlZmF1bHQgfHwgbSkgYXMgVFxuICAgICk7XG4gIH1cblxuICAvKipcbiAgICogQGRlc2NyaXB0aW9uIEluaXRpYWxpemVzIGEgQ29tbWFuZCBvYmplY3Qgd2l0aCBwYWNrYWdlIGluZm9ybWF0aW9uXG4gICAqIEBzdW1tYXJ5IFNldHMgdXAgYSBDb21tYW5kZXIgQ29tbWFuZCBvYmplY3Qgd2l0aCB0aGUgcGFja2FnZSBuYW1lLCBkZXNjcmlwdGlvbiwgYW5kIHZlcnNpb24gZnJvbSB0aGUgcGFja2FnZS5qc29uIGZpbGVcbiAgICpcbiAgICogQHBhcmFtIHtDb21tYW5kfSBjb21tYW5kIFRoZSBDb21tYW5kIG9iamVjdCB0byBpbml0aWFsaXplXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBbYmFzZVBhdGhdIFRoZSBiYXNlIHBhdGggd2hlcmUgdGhlIHBhY2thZ2UuanNvbiBmaWxlIGlzIGxvY2F0ZWQsIGRlZmF1bHRzIHRvIHRoZSBjdXJyZW50IHdvcmtpbmcgZGlyZWN0b3J5XG4gICAqIEByZXR1cm4ge3ZvaWR9XG4gICAqL1xuICBzdGF0aWMgaW5pdGlhbGl6ZShjb21tYW5kOiBDb21tYW5kLCBiYXNlUGF0aDogc3RyaW5nKSB7XG4gICAgY29uc3QgbmFtZSA9IENMSVV0aWxzLnBhY2thZ2VOYW1lKGJhc2VQYXRoKTtcbiAgICBjb21tYW5kXG4gICAgICAubmFtZShcImRlY2FmXCIpXG4gICAgICAuZGVzY3JpcHRpb24oYFJ1bnMgJHtuYW1lfSByZWxhdGVkIGNvbW1hbmRzYClcbiAgICAgIC52ZXJzaW9uKENMSVV0aWxzLnBhY2thZ2VWZXJzaW9uKGJhc2VQYXRoKSk7XG4gIH1cblxuICAvKipcbiAgICogQGRlc2NyaXB0aW9uIFJldHJpZXZlcyBhbmQgcGFyc2VzIHRoZSBwYWNrYWdlLmpzb24gZmlsZVxuICAgKiBAc3VtbWFyeSBSZWFkcyB0aGUgcGFja2FnZS5qc29uIGZpbGUgZnJvbSB0aGUgc3BlY2lmaWVkIHBhdGggYW5kIHBhcnNlcyBpdCBpbnRvIGEgSmF2YVNjcmlwdCBvYmplY3RcbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGJhc2VQYXRoIFRoZSBiYXNlIHBhdGggd2hlcmUgdGhlIHBhY2thZ2UuanNvbiBmaWxlIGlzIGxvY2F0ZWRcbiAgICogQHJldHVybiB7UmVjb3JkPHN0cmluZywgdW5rbm93bj59IFRoZSBwYXJzZWQgcGFja2FnZS5qc29uIGNvbnRlbnQgYXMgYW4gb2JqZWN0XG4gICAqIEBwcml2YXRlXG4gICAqL1xuICBwcml2YXRlIHN0YXRpYyBnZXRQYWNrYWdlKGJhc2VQYXRoOiBzdHJpbmcpOiBSZWNvcmQ8c3RyaW5nLCB1bmtub3duPiB7XG4gICAgdHJ5IHtcbiAgICAgIHJldHVybiBKU09OLnBhcnNlKFxuICAgICAgICBmcy5yZWFkRmlsZVN5bmMocGF0aC5qb2luKGJhc2VQYXRoLCBcInBhY2thZ2UuanNvblwiKSwgXCJ1dGY4XCIpXG4gICAgICApO1xuICAgIH0gY2F0Y2ggKGU6IHVua25vd24pIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcihgVW5hYmxlIHRvIHJlYWQgdmVyc2lvbiBmcm9tICR7YmFzZVBhdGh9OiAke2V9YCk7XG4gICAgfVxuICB9XG5cbiAgLyoqXG4gICAqIEBkZXNjcmlwdGlvbiBSZXR1cm5zIHRoZSB2ZXJzaW9uIGZyb20gcGFja2FnZS5qc29uXG4gICAqIEBzdW1tYXJ5IFJldHJpZXZlcyB0aGUgdmVyc2lvbiBmaWVsZCBmcm9tIHRoZSBwYWNrYWdlLmpzb24gZmlsZSBhdCB0aGUgc3BlY2lmaWVkIHBhdGhcbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGJhc2VQYXRoIFRoZSBiYXNlIHBhdGggd2hlcmUgdGhlIHBhY2thZ2UuanNvbiBmaWxlIGlzIGxvY2F0ZWRcbiAgICogQHJldHVybiB7c3RyaW5nfSBUaGUgcGFja2FnZSB2ZXJzaW9uIHN0cmluZ1xuICAgKi9cbiAgc3RhdGljIHBhY2thZ2VWZXJzaW9uKGJhc2VQYXRoOiBzdHJpbmcpOiBzdHJpbmcge1xuICAgIHJldHVybiBDTElVdGlscy5nZXRQYWNrYWdlKGJhc2VQYXRoKVtcInZlcnNpb25cIl0gYXMgc3RyaW5nO1xuICB9XG5cbiAgLyoqXG4gICAqIEBkZXNjcmlwdGlvbiBSZXR1cm5zIHRoZSBuYW1lIGZyb20gcGFja2FnZS5qc29uXG4gICAqIEBzdW1tYXJ5IFJldHJpZXZlcyB0aGUgbmFtZSBmaWVsZCBmcm9tIHRoZSBwYWNrYWdlLmpzb24gZmlsZSBhdCB0aGUgc3BlY2lmaWVkIHBhdGggYW5kIGV4dHJhY3RzIHRoZSBwYWNrYWdlIG5hbWUgd2l0aG91dCB0aGUgc2NvcGVcbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGJhc2VQYXRoIFRoZSBiYXNlIHBhdGggd2hlcmUgdGhlIHBhY2thZ2UuanNvbiBmaWxlIGlzIGxvY2F0ZWRcbiAgICogQHJldHVybiB7c3RyaW5nfSBUaGUgcGFja2FnZSBuYW1lIHdpdGhvdXQgdGhlIHNjb3BlIChlLmcuLCBcImNsaVwiIGZyb20gXCJAZGVjYWYtdHMvY2xpXCIpXG4gICAqL1xuICBzdGF0aWMgcGFja2FnZU5hbWUoYmFzZVBhdGg6IHN0cmluZyk6IHN0cmluZyB7XG4gICAgY29uc3QgbmFtZSA9IChDTElVdGlscy5nZXRQYWNrYWdlKGJhc2VQYXRoKVtcIm5hbWVcIl0gYXMgc3RyaW5nKS5zcGxpdChcIi9cIik7XG4gICAgcmV0dXJuIG5hbWVbbmFtZS5sZW5ndGggLSAxXTtcbiAgfVxufVxuIl19</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-06-04T22:57:20.797Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

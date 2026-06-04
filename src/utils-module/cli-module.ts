@@ -4,6 +4,8 @@ import path from "path";
 import { getCmdLogger } from "../logging";
 import { Metadata } from "@decaf-ts/decoration";
 import { CliWrapper } from "../CliWrapper";
+import { printAllBanners } from "../banners";
+import { readSlogans } from "../slogans";
 import { toENVFormat } from "@decaf-ts/logging";
 import {
   ModulesCommand,
@@ -95,6 +97,19 @@ const environmentExport = new Command()
         str.forEach((s) => log.info(s));
       }
     }
+  });
+
+const printAllBannersCommand = new Command()
+  .name("print-all-banners")
+  .description("prints every available CLI banner layout in sequence")
+  .action(async () => {
+    const log = getCmdLogger(printAllBannersCommand);
+    const slogans = readSlogans(log, process.cwd()) || [];
+    const availableSlogans = slogans
+      .map((entry) => entry?.Slogan?.trim())
+      .filter((slogan): slogan is string => Boolean(slogan));
+
+    printAllBanners(availableSlogans);
   });
 
 const MODULES_OPTION_SPECS: OptionSpec[] = [
@@ -255,6 +270,7 @@ export default function utils(): Command {
 
   utilsCmd.addCommand(libraries);
   utilsCmd.addCommand(environmentExport);
+  utilsCmd.addCommand(printAllBannersCommand);
   utilsCmd.addCommand(modulesCommand);
   utilsCmd.addCommand(runAllCommand);
   utilsCmd.addCommand(npmLinkCommand);

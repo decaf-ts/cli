@@ -17,7 +17,6 @@ import buildModule from "./build-module/cli-module";
 import releaseModule from "./release-module/cli-module";
 import utilsModule from "./utils-module/cli-module";
 
-const MIN_BANNER_WIDTH = 92;
 const DEFAULT_LOG_LEVEL = LogLevel.info;
 const DEFAULT_PATTERN =
   "{level} [{timestamp}] {app} {context} {separator} {message} {stack}";
@@ -50,6 +49,38 @@ const INCLUDED_MODULE_FACTORIES: CliModuleFactory[] = [
   releaseModule,
   utilsModule,
 ];
+
+type BannerLayout = {
+  lines: string[];
+  width: number;
+  indent: number;
+};
+
+const stripTrailingSpaces = (line: string) => line.replace(/\s+$/u, "");
+
+const getLeadingSpaceCount = (line: string) =>
+  line.length - line.trimStart().length;
+
+const normalizeBanner = (banner: string): BannerLayout => {
+  const lines = banner
+    .split("\n")
+    .map(stripTrailingSpaces)
+    .filter((line) => line.trim().length > 0);
+
+  const width = lines.reduce((max, line) => Math.max(max, line.length), 0);
+  const indent = lines.reduce(
+    (min, line) => Math.min(min, getLeadingSpaceCount(line)),
+    Number.POSITIVE_INFINITY
+  );
+
+  return {
+    lines,
+    width,
+    indent: Number.isFinite(indent) ? indent : 0,
+  };
+};
+
+const BANNER_LAYOUTS = banners.map(normalizeBanner);
 
 const pIdDescriptor: LogParameterDescriptor = {
   key: "pId",
@@ -695,7 +726,7 @@ export class CliWrapper extends LoggedClass {
 
   protected printBanner(args?: string[]) {
     if (this.bannerPrinted) {
-      return () => {};
+      return;
     }
     this.bannerPrinted = true;
 
@@ -707,25 +738,41 @@ export class CliWrapper extends LoggedClass {
       message = "Decaf: strongly brewed TypeScript.";
     }
 
-    // Select random banner and color palette
-    const bannerTemplate = banners[Math.floor(Math.random() * banners.length)];
+    this.writeBanner(message, this.selectBannerLayout());
+  }
+
+  private shouldSuppressBanner(args?: string[]) {
+    if (!args || args.length === 0) {
+      return false;
+    }
+
+    return args.some((arg) => {
+      if (!arg) return false;
+      return arg === "-h" || arg === "--help" || arg === "help";
+    });
+  }
+
+  private writeBanner(message: string, bannerLayout: BannerLayout) {
     const paletteKeys = Object.keys(colorPalettes);
     const palette =
       colorPalettes[
         paletteKeys[Math.floor(Math.random() * paletteKeys.length)]
       ];
 
-    const rawLines = bannerTemplate
-      .split("\n")
-      .filter((line) => line.trim().length > 0);
-    const maxLineWidth = rawLines.reduce<number>(
-      (max, line) => Math.max(max, line.length),
-      0
-    );
     const messageWidth = Math.max(0, message.length);
-    const targetWidth = Math.max(MIN_BANNER_WIDTH, maxLineWidth, messageWidth);
-    const banner = rawLines.map((line) => line.padEnd(targetWidth));
-    banner.push(message.padStart(targetWidth));
+    const bannerLeftOffset =
+      messageWidth > bannerLayout.width
+        ? Math.floor((messageWidth - bannerLayout.width) / 2)
+        : bannerLayout.indent;
+    const bannerPrefix = " ".repeat(bannerLeftOffset);
+    const sloganPrefix =
+      messageWidth > bannerLayout.width
+        ? ""
+        : `${bannerPrefix}${" ".repeat(bannerLayout.width - messageWidth)}`;
+    const banner = [
+      ...bannerLayout.lines.map((line) => `${bannerPrefix}${line}`),
+      `${sloganPrefix}${message}`,
+    ];
 
     const reset = "\x1b[0m";
     const paletteLength = Math.max(1, palette.length);
@@ -733,8 +780,29 @@ export class CliWrapper extends LoggedClass {
       const color = palette[index % paletteLength] || "";
       process.stdout.write(`${color}${banner[index]}${reset}\n`);
     }
+  }
 
-    return () => {};
+  private selectBannerLayout(): BannerLayout {
+    const availableWidth = process.stdout.columns ?? Number.POSITIVE_INFINITY;
+    const fittingLayouts = BANNER_LAYOUTS.filter(
+      (layout) => layout.width <= availableWidth
+    );
+
+    const candidateLayouts = fittingLayouts.length
+      ? fittingLayouts.filter(
+          (layout) =>
+            layout.width ===
+            Math.max(...fittingLayouts.map((candidate) => candidate.width))
+        )
+      : BANNER_LAYOUTS.filter(
+          (layout) =>
+            layout.width ===
+            Math.min(...BANNER_LAYOUTS.map((candidate) => candidate.width))
+        );
+
+    return candidateLayouts[
+      Math.floor(Math.random() * candidateLayouts.length)
+    ];
   }
 
   private getPriorityModule(args?: string[]): string | undefined {
@@ -774,16 +842,11 @@ export class CliWrapper extends LoggedClass {
    */
   async run(args: string[] = process.argv) {
     await this.boot();
-    let stopAnimation: (() => void) | undefined;
-    if (DecafCLieEnvironment.banner) {
+    if (DecafCLieEnvironment.banner && !this.shouldSuppressBanner(args)) {
       this.bannerPrinted = false;
-      stopAnimation = this.printBanner(args);
+      this.printBanner(args);
     }
-    try {
-      return await this.command.parseAsync(args);
-    } finally {
-      if (stopAnimation) stopAnimation();
-    }
+    return await this.command.parseAsync(args);
   }
 
   static accumulateEnvironment(obj: object) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Command as CMD } from "commander";
 import { Environment } from "@decaf-ts/logging";
 

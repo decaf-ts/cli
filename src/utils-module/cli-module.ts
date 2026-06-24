@@ -13,6 +13,7 @@ import {
   NpmTokenCommand,
   RunAllCommand,
   TagReleaseCommand,
+  CredentialsCommand,
 } from "@decaf-ts/utils";
 import {
   buildValueMap,
@@ -248,20 +249,169 @@ const tagReleaseCommand = new Command()
   .option("--version", "Show tag-release command version")
   .option("--public", "Publish the release to the public npm registry")
   .option("--private", "Publish the release to the restricted npm registry")
-  .option("--git-token <file>", "Git token file to use for authenticated pushes", ".token")
-  .option("--npm-token <file>", "NPM token file to use for publishes", ".npmtoken")
+  .option("--git-token <name>", "Secret name for the git push token", "github")
+  .option("--npm-token <name>", "Secret name for the npm publish token", "npm")
   .option("--git-user <name>", "Git user name to embed in authenticated pushes")
   .option("--allow-from-branch", "Skip the master/main branch guard")
   .option("--tag <tag>", "Release tag to create")
   .option("--message <message>", "Release message to use")
   .addHelpText(
     "after",
-    "\nIf tag or message are omitted, the command prompts interactively. The command uses .token for git pushes and .npmtoken for npm publish unless overridden."
+    "\nIf tag or message are omitted, the command prompts interactively. Tokens are resolved via the credentials command (env var → OS keychain → legacy file)."
   )
   .action(async function (this: Command) {
     const values = buildValueMap(this, TAG_RELEASE_OPTION_SPECS);
     await runUtilsCommand(new TagReleaseCommand(), values, this);
   });
+
+const CREDENTIALS_GET_OPTION_SPECS: OptionSpec[] = [
+  { name: "version", flag: "--version", type: "boolean" },
+  { name: "name", flag: "--name", type: "string" },
+  { name: "envVar", flag: "--env-var", type: "string" },
+  { name: "service", flag: "--service", type: "string" },
+  { name: "account", flag: "--account", type: "string" },
+  { name: "legacyFile", flag: "--legacy-file", type: "string" },
+];
+
+const credentialsGetCommand = new Command()
+  .name("get")
+  .description(
+    "resolve a secret and print it to stdout (no trailing newline).\n" +
+      "Resolution order: env var -> OS keychain -> legacy plaintext file.\n" +
+      "In CI, set NPM_TOKEN / GH_TOKEN / ATLASSIAN_API_TOKEN as env vars."
+  )
+  .option("--version", "Show credentials command version")
+  .option("--name <name>", "Secret name (npm, github, confluence, or custom)", "npm")
+  .option("--env-var <name>", "Override the environment variable name (e.g. GH_PAT instead of GH_TOKEN)")
+  .option("--service <name>", "Override the keychain service label (default: decaf-ts:<name>)")
+  .option("--account <name>", "Override the keychain account label")
+  .option("--legacy-file <path>", "Override the legacy plaintext file path (emits deprecation warning)")
+  .addHelpText(
+    "after",
+    "\nExamples:\n" +
+      "  decaf utils credentials get --name npm\n" +
+      "  decaf utils credentials get --name github --env-var GH_PAT\n" +
+      '  npm config set //registry.npmjs.org/:_authToken "$(decaf utils credentials get --name npm)"\n' +
+      "  decaf utils credentials get --name stripe --env-var STRIPE_SECRET_KEY --legacy-file .stripe-token"
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, CREDENTIALS_GET_OPTION_SPECS);
+    values.action = "get";
+    await runUtilsCommand(new CredentialsCommand(), values, this);
+  });
+
+const CREDENTIALS_STORE_OPTION_SPECS: OptionSpec[] = [
+  { name: "version", flag: "--version", type: "boolean" },
+  { name: "name", flag: "--name", type: "string" },
+  { name: "value", flag: "--value", type: "string" },
+  { name: "envVar", flag: "--env-var", type: "string" },
+  { name: "service", flag: "--service", type: "string" },
+  { name: "account", flag: "--account", type: "string" },
+  { name: "legacyFile", flag: "--legacy-file", type: "string" },
+];
+
+const credentialsStoreCommand = new Command()
+  .name("store")
+  .description(
+    "store a secret in the OS keychain for later retrieval by 'get'.\n" +
+      "Requires --value. Supports built-in names (npm, github, confluence) and custom names."
+  )
+  .option("--version", "Show credentials command version")
+  .option("--name <name>", "Secret name (npm, github, confluence, or custom)", "npm")
+  .option("--value <value>", "Secret value to store (required)")
+  .option("--env-var <name>", "Override the environment variable name for this secret")
+  .option("--service <name>", "Override the keychain service label (default: decaf-ts:<name>)")
+  .option("--account <name>", "Override the keychain account label")
+  .option("--legacy-file <path>", "Override the legacy plaintext file path")
+  .addHelpText(
+    "after",
+    "\nExamples:\n" +
+      "  decaf utils credentials store --name github --value ghp_xxxxxxxxxxxx\n" +
+      "  decaf utils credentials store --name my-api --env-var MY_API_TOKEN --service 'my-app:api' --account 'ci' --value 'sk_live_xxx'"
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, CREDENTIALS_STORE_OPTION_SPECS);
+    values.action = "store";
+    await runUtilsCommand(new CredentialsCommand(), values, this);
+  });
+
+const credentialsSetupCommand = new Command()
+  .name("setup")
+  .description(
+    "interactively enroll all built-in secrets (npm, github, confluence) into the OS keychain.\n" +
+      "Prompts for each token, stores it securely, and configures the git credential helper.\n" +
+      "Use --rm to auto-delete legacy plaintext token files after successful enrollment."
+  )
+  .option("--version", "Show credentials command version")
+  .option("--rm", "Delete legacy plaintext token files (.npmtoken, .token, .confluence-token) after setup")
+  .addHelpText(
+    "after",
+    "\nExamples:\n" +
+      "  decaf utils credentials setup\n" +
+      "  decaf utils credentials setup --rm   # auto-deletes legacy token files"
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, [
+      { name: "version", flag: "--version", type: "boolean" },
+      { name: "rm", flag: "--rm", type: "boolean" },
+    ]);
+    values.action = "setup";
+    await runUtilsCommand(new CredentialsCommand(), values, this);
+  });
+
+const credentialsGitHelperCommand = new Command()
+  .name("git-helper")
+  .description(
+    "configure the OS-native git credential helper only (no secret enrollment).\n" +
+      "macOS: osxkeychain | Linux: libsecret (falls back to store) | Windows: manager.\n" +
+      "This is also run automatically as part of 'setup'."
+  )
+  .option("--version", "Show credentials command version")
+  .addHelpText(
+    "after",
+    "\nExample:\n" +
+      "  decaf utils credentials git-helper"
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, [
+      { name: "version", flag: "--version", type: "boolean" },
+    ]);
+    values.action = "git-helper";
+    await runUtilsCommand(new CredentialsCommand(), values, this);
+  });
+
+const credentialsCommand = new Command()
+  .name("credentials")
+  .description(
+    "manage secrets via the OS keychain with env-var and legacy-file fallbacks.\n\n" +
+      "Resolution order for 'get': env var -> OS keychain -> legacy plaintext file.\n" +
+      "Built-in secrets: npm (NPM_TOKEN), github (GH_TOKEN), confluence (ATLASSIAN_API_TOKEN).\n" +
+      "Custom secrets are supported with --env-var, --service, --account, --legacy-file overrides.\n\n" +
+      "In CI: set the env var as a GitHub/GitLab secret — no keychain access needed.\n" +
+      "Locally: run 'setup' once to enroll secrets in the keychain, then delete plaintext files."
+  )
+  .addHelpText(
+    "after",
+    "\nSubcommands:\n" +
+      "  get         Resolve a secret and print to stdout\n" +
+      "  store       Store a secret in the OS keychain\n" +
+      "  setup       Interactive one-time enrollment of all built-in secrets (--rm to auto-delete legacy files)\n" +
+      "  git-helper  Configure the OS-native git credential helper\n\n" +
+      "Examples:\n" +
+      '  decaf utils credentials get --name npm\n' +
+      "  decaf utils credentials store --name github --value ghp_xxxxxxxxxxxx\n" +
+      "  decaf utils credentials setup\n" +
+      "  decaf utils credentials setup --rm\n" +
+      "  decaf utils credentials git-helper\n\n" +
+      "Programmatic API (TypeScript):\n" +
+      "  import { resolveSecret, hasSecret } from '@decaf-ts/utils';\n" +
+      "  const token = resolveSecret('npm'); // env var -> keychain -> legacy file"
+  );
+
+credentialsCommand.addCommand(credentialsGetCommand);
+credentialsCommand.addCommand(credentialsStoreCommand);
+credentialsCommand.addCommand(credentialsSetupCommand);
+credentialsCommand.addCommand(credentialsGitHelperCommand);
 
 export default function utils(): Command {
   const utilsCmd = new Command()
@@ -276,5 +426,6 @@ export default function utils(): Command {
   utilsCmd.addCommand(npmLinkCommand);
   utilsCmd.addCommand(npmTokenCommand);
   utilsCmd.addCommand(tagReleaseCommand);
+  utilsCmd.addCommand(credentialsCommand);
   return utilsCmd;
 }

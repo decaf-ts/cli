@@ -27,7 +27,7 @@ import { CliWrapper } from "../CliWrapper";
 new CliWrapper(process.cwd())
   .run(process.argv)
   .then(() => {
-    console.log("Thank you for using decaf-ts' command line interface");
+    console.error("Thank you for using decaf-ts' command line interface");
   })
   .catch((e: unknown) => {
     console.error(`${e instanceof Error ? e.message : e}`);

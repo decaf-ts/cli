@@ -14,6 +14,8 @@ import {
   RunAllCommand,
   TagReleaseCommand,
   CredentialsCommand,
+  BundleCommand,
+  BuildDocsCommand,
 } from "@decaf-ts/utils";
 import {
   buildValueMap,
@@ -413,6 +415,103 @@ credentialsCommand.addCommand(credentialsStoreCommand);
 credentialsCommand.addCommand(credentialsSetupCommand);
 credentialsCommand.addCommand(credentialsGitHelperCommand);
 
+/**
+ * @description Commander option specs forwarding `decaf utils bundle` flags.
+ * @summary Kebab-case CLI flags map back onto the camelCase
+ * {@link BundleCommand} option names consumed by `buildValueMap` /
+ * `runUtilsCommand` (`--base-path` -> `basePath`, etc.).
+ */
+const BUNDLE_OPTION_SPECS: OptionSpec[] = [
+  { name: "version", flag: "--version", type: "boolean" },
+  { name: "basePath", flag: "--base-path", type: "string" },
+  { name: "target", flag: "--target", type: "string" },
+  { name: "templates", flag: "--templates", type: "string" },
+  { name: "timeout", flag: "--timeout", type: "string" },
+  { name: "dryRun", flag: "--dry-run", type: "boolean" },
+  { name: "gitToken", flag: "--git-token", type: "string" },
+  { name: "npmToken", flag: "--npm-token", type: "string" },
+];
+
+/**
+ * @description `decaf utils bundle` wrapper command.
+ * @summary Mirrors the standalone `bundle` bin: parses the flags via
+ * `BUNDLE_OPTION_SPECS`, re-exposes the hyphenated `dry-run`/`git-token`/
+ * `npm-token` keys the utils command expects, and forwards execution to
+ * `BundleCommand` through `runUtilsCommand`.
+ */
+const bundleCommand = new Command()
+  .name("bundle")
+  .description("build and publish the @decaf-ts/dist-* aggregate bundle packages")
+  .option("--version", "Show bundle command version")
+  .option(
+    "--base-path <path>",
+    "Workspace root holding the decaf-ts packages"
+  )
+  .option("--target <dir>", "Output folder for the generated bundles")
+  .option(
+    "--templates <dir>",
+    "Folder holding bundles.json and package-template.json"
+  )
+  .option("--timeout <seconds>", "Wait between publishing two bundles")
+  .option("--dry-run", "Generate manifests only; skip install/publish")
+  .option("--git-token <name>", "Secret name for the git token", "github")
+  .option("--npm-token <name>", "Secret name for the npm token", "npm")
+  .addHelpText(
+    "after",
+    "\nUse `--dry-run` to generate manifests only (no install or publish). Token values are resolved via the credentials resolver and are never logged."
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, BUNDLE_OPTION_SPECS);
+    if (values.dryRun !== undefined) values["dry-run"] = values.dryRun;
+    if (values.gitToken !== undefined) values["git-token"] = values.gitToken;
+    if (values.npmToken !== undefined) values["npm-token"] = values.npmToken;
+    await runUtilsCommand(new BundleCommand(), values, this);
+  });
+
+/**
+ * @description Commander option specs forwarding `decaf utils build-docs` flags.
+ * @summary Kebab-case CLI flags map back onto the camelCase
+ * {@link BuildDocsCommand} option names consumed by `buildValueMap` /
+ * `runUtilsCommand` (`--base-path` -> `basePath`, etc.).
+ */
+const BUILD_DOCS_OPTION_SPECS: OptionSpec[] = [
+  { name: "version", flag: "--version", type: "boolean" },
+  { name: "basePath", flag: "--base-path", type: "string" },
+  { name: "readme", flag: "--readme", type: "string" },
+  { name: "docsDir", flag: "--docs-dir", type: "string" },
+];
+
+/**
+ * @description `decaf utils build-docs` wrapper command.
+ * @summary Mirrors the standalone `build-docs` bin: parses the flags via
+ * `BUILD_DOCS_OPTION_SPECS` and forwards execution to `BuildDocsCommand`
+ * through `runUtilsCommand`.
+ */
+const buildDocsCommand = new Command()
+  .name("build-docs")
+  .description("stage the package README into the docs folder")
+  .option("--version", "Show build-docs command version")
+  .option(
+    "--base-path <path>",
+    "Package root (defaults to the current working directory)"
+  )
+  .option(
+    "--readme <file>",
+    "README file to stage (defaults to <base-path>/README.md)"
+  )
+  .option(
+    "--docs-dir <dir>",
+    "Documentation output folder (defaults to <base-path>/docs)"
+  )
+  .addHelpText(
+    "after",
+    "\nThe docs folder is removed and recreated before the README is copied into it."
+  )
+  .action(async function (this: Command) {
+    const values = buildValueMap(this, BUILD_DOCS_OPTION_SPECS);
+    await runUtilsCommand(new BuildDocsCommand(), values, this);
+  });
+
 export default function utils(): Command {
   const utilsCmd = new Command()
     .command("utils")
@@ -427,5 +526,7 @@ export default function utils(): Command {
   utilsCmd.addCommand(npmTokenCommand);
   utilsCmd.addCommand(tagReleaseCommand);
   utilsCmd.addCommand(credentialsCommand);
+  utilsCmd.addCommand(bundleCommand);
+  utilsCmd.addCommand(buildDocsCommand);
   return utilsCmd;
 }

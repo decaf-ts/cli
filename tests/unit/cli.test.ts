@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 import SpyInstance = jest.SpyInstance;
 
 const exitMock = jest.fn();

@@ -27,10 +27,11 @@ export class CLIUtils {
    */
   static async loadFromFile(path: string): Promise<CliModule> {
     try {
-      return CLIUtils.normalizeImport(import(path));
+      return await CLIUtils.normalizeImport(import(path));
     } catch (e: unknown) {
       throw new Error(
-        `Failed to load from ${path}: ${e instanceof Error ? e.message : e}`
+        `Failed to load from ${path}: ${e instanceof Error ? e.message : e}`,
+        { cause: e }
       );
     }
   }
@@ -81,7 +82,7 @@ export class CLIUtils {
         fs.readFileSync(path.join(basePath, "package.json"), "utf8")
       );
     } catch (e: unknown) {
-      throw new Error(`Unable to read version from ${basePath}: ${e}`);
+      throw new Error(`Unable to read version from ${basePath}: ${e}`, { cause: e });
     }
   }
 

@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 import buildModule from "../../src/build-module/cli-module";
 import { Command } from "commander";
 

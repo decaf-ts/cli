@@ -96,7 +96,7 @@ const pIdDescriptor: LogParameterDescriptor = {
 try {
   Logging.register(pIdDescriptor);
 } catch (e: unknown) {
-  throw new Error(`Failed to register process ID logging parameter: ${e}`);
+  throw new Error(`Failed to register process ID logging parameter: ${e}`, { cause: e });
 }
 applyLoggingConfig(DEFAULT_LOG_LEVEL);
 
@@ -209,7 +209,8 @@ export class CliWrapper extends LoggedClass {
       this.registerModule(name, module, moduleRoot, log);
     } catch (e: unknown) {
       throw new Error(
-        `failed to load module under ${filePath}: ${e instanceof Error ? e.message : e}`
+        `failed to load module under ${filePath}: ${e instanceof Error ? e.message : e}`,
+        { cause: e }
       );
     }
 

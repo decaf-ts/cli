@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 import path from "path";
 import { CLIUtils } from "../../src/utils";
 import { CLI_FILE_NAME } from "../../src/constants";
@@ -13,7 +14,14 @@ const fixtureFile = path.join(
 describe("Module Loading", function () {
 
   it("loads from files", async function () {
-    await expect(() => CLIUtils.loadFromFile("missing-cli-module")).rejects.toThrow();
+    const missingModuleError = await CLIUtils.loadFromFile(
+      "missing-cli-module"
+    ).catch((error: unknown) => error);
+    expect(missingModuleError).toBeInstanceOf(Error);
+    expect(missingModuleError.message).toContain(
+      "Failed to load from missing-cli-module"
+    );
+    expect(missingModuleError.cause).toBeDefined();
     const module = await CLIUtils.loadFromFile(fixtureFile);
     expect(module).toBeDefined();
     expect(module.name).toBe("build");

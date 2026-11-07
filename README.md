@@ -35,7 +35,7 @@ A modular command-line interface framework for Decaf-ts that dynamically discove
 
 Documentation available [here](https://decaf-ts.github.io/cli/)
 
-Minimal size: 16.7 KB kb gzipped
+Minimal size: 17.2 KB kb gzipped
 
 
 ### Description
@@ -267,6 +267,6 @@ So if you can, if this project in any way. either by learning something or simpl
 
 ## License
 
-This project is released under the [MIT License](./LICENSE.md).
+This project is released under the [Mozilla Public License 2.0](./LICENSE.md).
 
 By developers, for developers...

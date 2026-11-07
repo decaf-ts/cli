@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 describe("CliWrapper banner layout ties", () => {
   const originalColumnsDescriptor = Object.getOwnPropertyDescriptor(
     process.stdout,

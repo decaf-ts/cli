@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 import utilsModule from "../../src/utils-module/cli-module";
 import * as banners from "../../src/banners";
 import * as slogans from "../../src/slogans";

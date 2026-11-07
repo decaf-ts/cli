@@ -1,3 +1,4 @@
+import { it } from "@decaf-ts/for-testing";
 /* eslint-disable no-control-regex */
 
 import { CliWrapper } from "../../src";
